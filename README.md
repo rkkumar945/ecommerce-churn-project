@@ -1,0 +1,1 @@
+"Month 1 Complete ✅ — SQL Foundations: SELECT/WHERE/GROUP BY, all JOIN types, Window Functions (ROW_NUMBER, RANK, DENSE_RANK, NTILE, LAG/LEAD), CTEs (including chained CTEs for RFM-style analysis), missing value handling, and query optimization with indexing."
