@@ -35,3 +35,9 @@ The end-to-end cleaning pipeline processes raw retail transactions through the f
 4. **Non-Product Code Removal:** Cleared operational stock codes (`POST`, `DOT`, `M`, `ADJUST`, `GIFT`, `AMAZONFEE`) to keep only genuine merchandise.
 5. **Feature Engineering:** Converted timestamps and extracted temporal features (`Year`, `Month`, `DayOfWeek`).
 6. **Target Variable Definition:** Built an RFM table and applied a 90-day inactivity threshold to label customers as `Churned` vs `Non-Churned`.
+
+
+
+
+
+"Month 2 Complete ✅ — Python fundamentals (lists/dicts/loops/functions), NumPy (arrays, math ops, percentiles), API/JSON basics (Bonus Days), Pandas (DataFrame/Series, loading, indexing, filtering, groupby, merge/join/concat, pivot tables). Key deliverable: Churn label defined using Recency-based business rule (90-day threshold), producing a customer-level RFM+Churned dataset ready for ML."
