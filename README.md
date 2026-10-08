@@ -41,3 +41,35 @@ The end-to-end cleaning pipeline processes raw retail transactions through the f
 
 
 "Month 2 Complete ✅ — Python fundamentals (lists/dicts/loops/functions), NumPy (arrays, math ops, percentiles), API/JSON basics (Bonus Days), Pandas (DataFrame/Series, loading, indexing, filtering, groupby, merge/join/concat, pivot tables). Key deliverable: Churn label defined using Recency-based business rule (90-day threshold), producing a customer-level RFM+Churned dataset ready for ML."
+
+
+
+
+## Business Insights
+
+- **Churn Rate:** [X]% overall — [apna number]
+- **Key Risk Factor:** First-time buyers churn at [X]% vs [X]% for repeat customers
+- **Segment Risk:** [apna VIP finding]
+- **Geographic Pattern:** [apna UK/Non-UK finding]
+- **Revenue Impact:** £[X] in historical spend from churned customers
+
+**Top Recommendation:** [apna recommendation]
+
+
+
+
+
+## 📊 Full EDA Report
+See the complete exploratory data analysis: [notebooks/63_eda_report_final.ipynb](notebooks/63_eda_report_final.ipynb)
+
+**Key Findings:**
+- Churn rate: [X]%
+- Significant Monetary difference between churned/non-churned (p<0.05)
+- Dataset is imbalanced ([X]:1 ratio) — requires SMOTE/class_weight for Month 4
+
+
+
+
+
+
+"Month 3 Complete ✅: Descriptive statistics, distributions, hypothesis testing (permutation, t-test, chi-square), correlation, outlier handling, Matplotlib/Seaborn visualization, churn-rate EDA, class imbalance check, aur business insights."
