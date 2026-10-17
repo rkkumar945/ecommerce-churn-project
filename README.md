@@ -73,3 +73,15 @@ See the complete exploratory data analysis: [notebooks/63_eda_report_final.ipynb
 
 
 "Month 3 Complete ✅: Descriptive statistics, distributions, hypothesis testing (permutation, t-test, chi-square), correlation, outlier handling, Matplotlib/Seaborn visualization, churn-rate EDA, class imbalance check, aur business insights."
+
+
+
+
+
+
+## ML Problem Statement
+- **Type:** Binary classification (supervised)
+- **Target (y):** Churned (1 = churned, 0 = active)
+- **Features (X):** customer behaviour columns (Frequency, Monetary, country, etc.)
+- **Business goal:** churn hone se pehle at-risk customers pehchaanna, taaki retention offer diya ja sake
+- **Success metric:** Accuracy nahi (class imbalance, Day 56B). Recall, F1 aur ROC-AUC (Day 71-74)
