@@ -1,0 +1,3 @@
+,accuracy,precision,recall,f1,roc_auc,f1_std
+Logistic Regression,0.722,0.773,0.72,0.745,0.794,0.01
+Decision Tree (tuned),0.716,0.752,0.746,0.748,0.781,0.005
