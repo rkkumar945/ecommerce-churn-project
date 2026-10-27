@@ -69,12 +69,12 @@ Full report: [`notebooks/month3_statistics_eda/63_eda_report_final.ipynb`](noteb
 - Evaluation: confusion matrix, precision/recall/F1, ROC-AUC
 
 ## Key Findings
-- **Total Customers:** 5,283[span_4](start_span)[span_4](end_span)
-- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)[span_5](start_span)[span_5](end_span)
-- **First-time buyers are the riskiest:** higher churn compared to customers with 4+ orders[span_6](start_span)[span_6](end_span).
-- **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed[span_7](start_span)[span_7](end_span).
-- **Geography:** UK vs Rest of World analysis completed using chi-square tests[span_8](start_span)[span_8](end_span).
-- **Recommendation:** a "second purchase" incentive shortly after a first order[span_9](start_span)[span_9](end_span).
+- **Total Customers:** 5,283
+- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)
+- **First-time buyers are the riskiest:** higher churn compared to customers with 4+ orders.
+- **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed.
+- **Geography:** UK vs Rest of World analysis completed using chi-square tests.
+- **Recommendation:** a "second purchase" incentive shortly after a first order.
 
 ![Churn rate dashboard](reports/churn_rate_dashboard.png)
 
@@ -113,7 +113,7 @@ Full report: [`notebooks/month3_statistics_eda/63_eda_report_final.ipynb`](noteb
 
 ## How to Run
 ```bash
-git clone https://github.com/<username>/ecommerce-churn-project.git
+git clone https://github.com/rkkumar945/ecommerce-churn-project.git
 cd ecommerce-churn-project
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
@@ -126,7 +126,7 @@ pip install -r requirements.txt
 ## Limitations
 - Data is from 2009–2011 from a single UK retailer, so patterns may not transfer to other businesses.
 - The 90-day churn window is a business assumption; other thresholds would change the churn rate.
-- Test set has [X] churners, so metric confidence intervals are fairly wide.
+- Test set has 1,057 churners, so metric confidence intervals are fairly wide.
 - Predicted probabilities are not calibrated (class weighting inflates them); the model is meant for **ranking** customers.
 
 ## Roadmap
