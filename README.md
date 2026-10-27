@@ -50,8 +50,8 @@ with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 | Missing `Description` | Filled with `'Unknown Product'` |
 
 ## Key Findings
-- **Total Customers:** 5,283[span_4](start_span)[span_4](end_span)
-- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)[span_5](start_span)[span_5](end_span)
+- **Total Customers:** 5,283
+- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)
 - **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed.
 - **Geography:** UK vs Rest of World analysis completed using chi-square tests.
 
