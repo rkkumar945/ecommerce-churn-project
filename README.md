@@ -47,13 +47,34 @@ with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 | Duplicates | Removed |
 | Cancellations (Invoice starts with `C`) | Removed: they distort monetary value |
 | Non-product codes (POST, DOT, M, ADJUST, ...) | Identified and excluded |
-| Missing `Description` | Filled with `'Unknown Product'` |
+| Missing `Description` | Filled with `'Unknown Product'` (display-only field) |
+
+### 3. Target Variable Definition
+A customer is **churned** if they place **no order in the 90 days after a cutoff date**
+(cutoff = last date in the data − 90 days).
+
+**Features use only transactions before the cutoff.** The label comes only from the window after it.
+This avoids *data leakage*.
+
+### 4. Statistics & EDA (Month 3)
+Hypothesis tests (permutation test, Welch t-test, chi-square), effect sizes,
+correlation analysis, IQR outlier analysis, and a churn-rate deep dive.
+Full report: [`notebooks/month3_statistics_eda/63_eda_report_final.ipynb`](notebooks/month3_statistics_eda/63_eda_report_final.ipynb)
+
+### 5. Machine Learning (Month 4)
+- Leakage-free features: Recency, Frequency, log-Monetary, AvgOrderValue, Tenure, UniqueProducts, Region
+- Stratified train/test split (80/20); scaling done **inside** pipelines
+- Imbalance handled and compared: baseline vs `class_weight='balanced'` vs SMOTE (5-fold CV)
+- Models: Logistic Regression and a tuned Decision Tree (validation curves + GridSearchCV)
+- Evaluation: confusion matrix, precision/recall/F1, ROC-AUC
 
 ## Key Findings
-- **Total Customers:** 5,283
-- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)
-- **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed.
-- **Geography:** UK vs Rest of World analysis completed using chi-square tests.
+- **Total Customers:** 5,283[span_4](start_span)[span_4](end_span)
+- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)[span_5](start_span)[span_5](end_span)
+- **First-time buyers are the riskiest:** higher churn compared to customers with 4+ orders[span_6](start_span)[span_6](end_span).
+- **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed[span_7](start_span)[span_7](end_span).
+- **Geography:** UK vs Rest of World analysis completed using chi-square tests[span_8](start_span)[span_8](end_span).
+- **Recommendation:** a "second purchase" incentive shortly after a first order[span_9](start_span)[span_9](end_span).
 
 ![Churn rate dashboard](reports/churn_rate_dashboard.png)
 
@@ -62,11 +83,13 @@ with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 
 | Model | Test Precision | Test Recall | Test F1 | Test ROC-AUC |
 |---|---|---|---|---|
-| Logistic Regression | 0.654 | 0.712 | 0.682 | 0.745 |
-| Decision Tree (tuned) | 0.631 | 0.689 | 0.658 | 0.710 |
+| Logistic Regression | 0.791 | 0.739 | 0.764 | 0.809 |[span_10](start_span)[span_10](end_span)
+| Decision Tree (tuned) | 0.784 | 0.734 | 0.758 | 0.807 |[span_11](start_span)[span_11](end_span)
 | Baseline (majority class) | 0 | 0 | 0 | 0.50 |
 
 ![ROC curve](reports/roc_curve_cv.png)
+
+![Confusion matrices](reports/confusion_matrices_test.png)
 
 > Accuracy is deliberately not the headline metric: with imbalanced classes a model
 > that always predicts the majority class gives a false sense of high performance.
@@ -74,22 +97,46 @@ with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 ## Repository Structure
 ```text
 ├── data/                 # not tracked, see data/README.md
-├── notebooks/            # month-wise subfolders (SQL, Python, Stats, ML)
-├── src/                  # reusable modules (cleaning, features, sql)
+├── notebooks/
+│   ├── month1_sql/
+│   ├── month2_python_pandas/
+│   ├── month3_statistics_eda/
+│   ├── month4_machine_learning/
+│   └── weekly_tests/
+├── src/
+│   ├── sql/              # reusable SQL queries
+│   ├── cleaning/         # data cleaning
+│   ├── features/         # leakage-free feature builder
+│   └── models/           # evaluation helpers
 ├── reports/              # charts and comparison tables
 └── requirements.txt
 
+## How to Run
+```bash
+git clone https://github.com/<username>/ecommerce-churn-project.git
+cd ecommerce-churn-project
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+1. Download the dataset to `data/raw/online_retail_II.csv` (see `data/README.md`).
+2. Run notebooks in order: `month1_sql` → `month2_python_pandas` → `month3_statistics_eda` → `month4_machine_learning`.
+3. Rebuild the ML dataset from the command line: `python -m src.features.build_features`
+
 ## Limitations
 - Data is from 2009–2011 from a single UK retailer, so patterns may not transfer to other businesses.
-- The 90-day churn window is a business assumption.
-- Predicted probabilities are not calibrated; the model is meant for **ranking** customers.
+- The 90-day churn window is a business assumption; other thresholds would change the churn rate.
+- Test set has [X] churners, so metric confidence intervals are fairly wide.
+- Predicted probabilities are not calibrated (class weighting inflates them); the model is meant for **ranking** customers.
 
 ## Roadmap
 - [x] SQL, Python/Pandas, statistics, EDA
 - [x] Leakage-free ML with CV, imbalance handling and evaluation
 - [ ] Random Forest / XGBoost, hyperparameter tuning
+- [ ] RFM segments and customer lifetime value
 - [ ] SHAP explainability
+- [ ] MLflow experiment tracking
 - [ ] Streamlit web app + deployment
 
 ## Author
-**Rajat Kumar**
+**Rajat Kumar**, [LinkedIn](#) · [GitHub](#)
