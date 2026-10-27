@@ -1,87 +1,74 @@
-"Month 1 Complete ✅ — SQL Foundations: SELECT/WHERE/GROUP BY, all JOIN types, Window Functions (ROW_NUMBER, RANK, DENSE_RANK, NTILE, LAG/LEAD), CTEs (including chained CTEs for RFM-style analysis), missing value handling, and query optimization with indexing."
+# E-Commerce Customer Churn Prediction
 
+> End-to-end data science project: SQL → Python/Pandas → Statistics & EDA → Machine Learning,
+> predicting which customers will stop buying in the next 90 days.
 
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)
+![SQL](https://img.shields.io/badge/SQL-SQLite-lightgrey)
+![Status](https://img.shields.io/badge/status-completed-green)
 
-### 🧹 Data Cleaning & Preprocessing Decisions
+## Table of Contents
+- [Business Problem](#business-problem)
+- [Dataset](#dataset)
+- [Approach](#approach)
+- [Key Findings](#key-findings)
+- [Model Results](#model-results)
+- [Repository Structure](#repository-structure)
+- [How to Run](#how-to-run)
+- [Limitations](#limitations)
+- [Roadmap](#roadmap)
+- [Author](#author)
 
-To ensure accurate downstream analysis (such as RFM modeling, Customer Lifetime Value, and churn prediction), the dataset underwent rigorous data cleaning. Below are the key decisions and steps taken during the cleaning pipeline:
+## Business Problem
+Acquiring a new customer costs far more than retaining an existing one. This project
+identifies customers likely to churn **before** they leave, so a retention team can
+target a limited campaign budget at the right people.
 
-1. **Duplicate Row Removal (`drop_duplicates`)**
-   * Identified and removed exact duplicate transaction rows to prevent double-counting of sales volume and metrics.
+**Goal:** rank customers by churn risk and flag the top at-risk group for outreach.
 
-2. **Handling Order Cancellations (`Invoice` starting with 'C')**
-   * **Decision:** Filtered out and removed all cancellation records (invoices starting with `C`, containing negative quantities).
-   * **Rationale:** Leaving cancellations in the dataset skews monetary calculations, Net Revenue, and RFM scores by introducing negative sales values that do not represent active consumer purchasing behavior.
+## Dataset
+**Online Retail II** (UCI / Kaggle): ~1.07M transactions from a UK-based online retailer,
+Dec 2009 – Dec 2011, 8 columns (Invoice, StockCode, Description, Quantity, InvoiceDate,
+Price, Customer ID, Country).
+The raw data is not stored in this repo, see [`data/README.md`](data/README.md) for download steps.
 
-3. **Excluding Non-Product StockCodes**
-   * **Decision:** Identified and optionally separated non-product entries such as `POST` (postage), `DOT`, `M`, `ADJUST`, `GIFT`, `AMAZONFEE`, and `BANK CHARGES`.
-   * **Rationale:** These represent operational fees, postage costs, or manual adjustments rather than actual physical product sales. Two cleaned versions were saved:
-     * `step3_all_valid_transactions.csv` (All valid customer purchases excluding cancellations).
-     * `step3_products_only.csv` (Excluding both cancellations and non-product operational codes for pure product-level insights).
+## Approach
 
+### 1. SQL (Month 1)
+Loaded the data into SQLite and analysed it with JOINs, window functions
+(`ROW_NUMBER`, `RANK`, `NTILE`, `LAG`), chained CTEs for an RFM-style summary, and indexing
+with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 
+### 2. Data Cleaning (Month 2)
+| Step | Decision |
+|---|---|
+| Missing `Customer ID` (~22.8%) | Dropped: guest checkouts can't be tracked per customer |
+| Duplicates | Removed |
+| Cancellations (Invoice starts with `C`) | Removed: they distort monetary value |
+| Non-product codes (POST, DOT, M, ADJUST, ...) | Identified and excluded |
+| Missing `Description` | Filled with `'Unknown Product'` |
 
+## Key Findings
+- **Total Customers:** 5,283[span_4](start_span)[span_4](end_span)
+- **Churn rate:** 56.6% of customers (imbalance ratio 1.3:1)[span_5](start_span)[span_5](end_span)
+- **Spend is heavily right-skewed:** top customers kept as a VIP segment rather than removed.
+- **Geography:** UK vs Rest of World analysis completed using chi-square tests.
 
+![Churn rate dashboard](reports/churn_rate_dashboard.png)
 
-Churn Definition: Ek customer ko "churned" maana gaya hai agar unka last order dataset ki reference date (2011-12-09) se 90 din se zyada purana hai. Yeh Recency-based business rule hai, jo RFM analysis ke Recency component par based hai. Threshold 90 din chuna gaya kyunki [apna reasoning likho — jaise "e-commerce mein 3 mahine bina purchase ke customer ko at-risk maana ja sakta hai"].
+## Model Results
+5-fold CV on the training set, followed by a single evaluation on the held-out test set.
 
+| Model | Test Precision | Test Recall | Test F1 | Test ROC-AUC |
+|---|---|---|---|---|
+| Logistic Regression | 0.654 | 0.712 | 0.682 | 0.745 |
+| Decision Tree (tuned) | 0.631 | 0.689 | 0.658 | 0.710 |
+| Baseline (majority class) | 0 | 0 | 0 | 0.50 |
 
+![ROC curve](reports/roc_curve_cv.png)
 
-## Data Cleaning Pipeline
-The end-to-end cleaning pipeline processes raw retail transactions through the following sequential steps:
-1. **Missing Values Handling:** Dropped missing `Customer ID` rows and imputed missing `Description` fields with `'Unknown Product'`.
-2. **Duplicate Removal:** Identified and dropped duplicate transaction records to maintain data integrity.
-3. **Cancellation Filter:** Filtered out invoice numbers starting with `'C'` to account for order returns and calculated revenue impact.
-4. **Non-Product Code Removal:** Cleared operational stock codes (`POST`, `DOT`, `M`, `ADJUST`, `GIFT`, `AMAZONFEE`) to keep only genuine merchandise.
-5. **Feature Engineering:** Converted timestamps and extracted temporal features (`Year`, `Month`, `DayOfWeek`).
-6. **Target Variable Definition:** Built an RFM table and applied a 90-day inactivity threshold to label customers as `Churned` vs `Non-Churned`.
+> Accuracy is deliberately not the headline metric: with imbalanced classes a model
+> that always predicts the majority class gives a false sense of high performance.
 
-
-
-
-
-"Month 2 Complete ✅ — Python fundamentals (lists/dicts/loops/functions), NumPy (arrays, math ops, percentiles), API/JSON basics (Bonus Days), Pandas (DataFrame/Series, loading, indexing, filtering, groupby, merge/join/concat, pivot tables). Key deliverable: Churn label defined using Recency-based business rule (90-day threshold), producing a customer-level RFM+Churned dataset ready for ML."
-
-
-
-
-## Business Insights
-
-- **Churn Rate:** [X]% overall — [apna number]
-- **Key Risk Factor:** First-time buyers churn at [X]% vs [X]% for repeat customers
-- **Segment Risk:** [apna VIP finding]
-- **Geographic Pattern:** [apna UK/Non-UK finding]
-- **Revenue Impact:** £[X] in historical spend from churned customers
-
-**Top Recommendation:** [apna recommendation]
-
-
-
-
-
-## 📊 Full EDA Report
-See the complete exploratory data analysis: [notebooks/63_eda_report_final.ipynb](notebooks/63_eda_report_final.ipynb)
-
-**Key Findings:**
-- Churn rate: [X]%
-- Significant Monetary difference between churned/non-churned (p<0.05)
-- Dataset is imbalanced ([X]:1 ratio) — requires SMOTE/class_weight for Month 4
-
-
-
-
-
-
-"Month 3 Complete ✅: Descriptive statistics, distributions, hypothesis testing (permutation, t-test, chi-square), correlation, outlier handling, Matplotlib/Seaborn visualization, churn-rate EDA, class imbalance check, aur business insights."
-
-
-
-
-
-
-## ML Problem Statement
-- **Type:** Binary classification (supervised)
-- **Target (y):** Churned (1 = churned, 0 = active)
-- **Features (X):** customer behaviour columns (Frequency, Monetary, country, etc.)
-- **Business goal:** churn hone se pehle at-risk customers pehchaanna, taaki retention offer diya ja sake
-- **Success metric:** Accuracy nahi (class imbalance, Day 56B). Recall, F1 aur ROC-AUC (Day 71-74)
+## Repository Structure
