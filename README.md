@@ -72,3 +72,24 @@ with `EXPLAIN QUERY PLAN`. Key queries are in [`src/sql/`](src/sql/).
 > that always predicts the majority class gives a false sense of high performance.
 
 ## Repository Structure
+```text
+├── data/                 # not tracked, see data/README.md
+├── notebooks/            # month-wise subfolders (SQL, Python, Stats, ML)
+├── src/                  # reusable modules (cleaning, features, sql)
+├── reports/              # charts and comparison tables
+└── requirements.txt
+
+## Limitations
+- Data is from 2009–2011 from a single UK retailer, so patterns may not transfer to other businesses.
+- The 90-day churn window is a business assumption.
+- Predicted probabilities are not calibrated; the model is meant for **ranking** customers.
+
+## Roadmap
+- [x] SQL, Python/Pandas, statistics, EDA
+- [x] Leakage-free ML with CV, imbalance handling and evaluation
+- [ ] Random Forest / XGBoost, hyperparameter tuning
+- [ ] SHAP explainability
+- [ ] Streamlit web app + deployment
+
+## Author
+**Rajat Kumar**
