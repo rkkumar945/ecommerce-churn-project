@@ -6,6 +6,9 @@ EUROPE = ['Germany', 'France', 'Spain', 'Netherlands', 'Belgium', 'Switzerland',
           'Italy', 'Austria', 'Denmark', 'Sweden', 'Norway', 'Finland', 'EIRE', 'Ireland',
           'Poland', 'Channel Islands', 'Cyprus', 'Greece']
 
+# Postage / fees / adjustments in Online Retail II - not real products.
+NON_PRODUCT_CODES = ['POST', 'DOT', 'M', 'ADJUST', 'GIFT', 'AMAZONFEE']
+
 
 def region_bucket(country: str) -> str:
     if country == 'United Kingdom':
@@ -13,9 +16,17 @@ def region_bucket(country: str) -> str:
     return 'Rest of Europe' if country in EUROPE else 'Rest of World'
 
 
-def build_customer_dataset(tx: pd.DataFrame, horizon_days: int = 90) -> pd.DataFrame:
-    """Features sirf cutoff se pehle ke transactions se; label cutoff ke baad ke window se."""
+def build_customer_dataset(tx: pd.DataFrame, horizon_days: int = 90,
+                           exclude_non_product: bool = False) -> pd.DataFrame:
+    """Features sirf cutoff se pehle ke transactions se; label cutoff ke baad ke window se.
+
+    tx must already be cleaned (see src/cleaning/clean_data.py).
+    exclude_non_product: True karne par POST/DOT/M/ADJUST/GIFT/AMAZONFEE rows hata di jaati hain.
+    Default False rakha hai taaki purane notebook results reproduce hote rahein.
+    """
     tx = tx.copy()
+    if exclude_non_product:
+        tx = tx[~tx['StockCode'].astype(str).isin(NON_PRODUCT_CODES)]
     tx['LineTotal'] = tx['Quantity'] * tx['Price']
 
     cutoff = tx['InvoiceDate'].max() - pd.Timedelta(days=horizon_days)
@@ -34,7 +45,8 @@ def build_customer_dataset(tx: pd.DataFrame, horizon_days: int = 90) -> pd.DataF
     f['Recency'] = (cutoff - f['LastPurchase']).dt.days
     f['Tenure'] = (cutoff - f['FirstPurchase']).dt.days
     f['AvgOrderValue'] = f['Monetary'] / f['Frequency']
-    f['Monetary_log'] = np.log1p(f['Monetary'])
+    # clip: net-negative Monetary (e.g. adjustment rows) par log1p NaN na de
+    f['Monetary_log'] = np.log1p(f['Monetary'].clip(lower=0))
     f['Region'] = f['Country'].map(region_bucket)
     f['Churned'] = (~f['Customer ID'].isin(future['Customer ID'].unique())).astype(int)
 

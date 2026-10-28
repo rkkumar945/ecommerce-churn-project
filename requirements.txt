@@ -1,0 +1,26 @@
+# Core data stack
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+statsmodels>=0.14
+
+# Machine learning
+# Saved models in notebooks/models/*.joblib were pickled with scikit-learn 1.8.0 -
+# load them with the same minor version.
+scikit-learn>=1.8,<1.9
+imbalanced-learn>=0.13      # SMOTE (logreg_pipeline.joblib needs it to load)
+joblib>=1.3
+
+# Visualization
+matplotlib>=3.8
+seaborn>=0.13
+
+# Notebooks
+jupyter
+ipykernel
+
+# API basics notebooks (Days 25B-25D)
+requests>=2.31
+
+# Tests
+pytest>=7
