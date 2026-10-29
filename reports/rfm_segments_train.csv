@@ -1,0 +1,7 @@
+Segment,customers,avg_recency,avg_frequency,avg_monetary,churn_rate,pct_customers,pct_past_revenue
+Champions,986,36.37,14.7,7463.03,20.08,23.33,68.9
+Loyal,800,116.63,5.16,1914.21,50.0,18.93,14.34
+New / Promising,376,47.62,1.5,537.75,51.6,8.9,1.89
+At Risk,468,341.82,5.11,1830.06,68.8,11.07,8.02
+Need Attention,373,167.44,1.43,476.27,72.92,8.83,1.66
+Hibernating,1223,413.81,1.3,452.43,82.34,28.94,5.18

@@ -1,0 +1,4 @@
+model,roc_auc,average_precision,auc_std,train_auc,fit_sec
+LogReg v2,0.7972,0.821,0.0126,0.8014,0.0413
+RandomForest,0.7926,0.8154,0.0124,0.9659,1.4005
+XGBoost,0.7975,0.8173,0.0108,0.8793,0.896

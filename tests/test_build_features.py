@@ -105,4 +105,30 @@ def test_exclude_non_product_codes():
     kept = build_customer_dataset(df).set_index('Customer ID')
     dropped = build_customer_dataset(df, exclude_non_product=True)
     assert kept.loc[2, 'Frequency'] == 1
-    assert 2 not in set(dropped['Customer ID'])   # customer 2 ka past activity sab POST tha
+    assert 2 not in set(dropped['Customer ID'])   # customer 2 ka past activity sab POST 
+
+
+
+
+
+
+
+
+
+def test_no_nans_in_features():
+    out = build_customer_dataset(make_tx())
+    assert not out.drop(columns=['Churned']).isnull().any().any()
+
+
+def test_features_invariant_to_future_rows():
+    """Future transactions ko kuch bhi kar do, features nahi badalne chahiye (sirf label badal sakta hai)."""
+    tx = make_tx()
+    base = build_customer_dataset(tx).set_index('Customer ID')
+
+    tx2 = tx.copy()
+    future_mask = tx2['InvoiceDate'] >= pd.Timestamp('2011-09-10')
+    tx2.loc[future_mask, ['Quantity', 'Price']] = [99, 99]
+    changed = build_customer_dataset(tx2).set_index('Customer ID')
+
+    cols = [c for c in base.columns if c != 'Churned']
+    pd.testing.assert_frame_equal(base[cols], changed[cols])
