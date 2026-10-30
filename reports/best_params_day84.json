@@ -1,0 +1,20 @@
+{
+  "LogReg": {
+    "m__C": 0.1
+  },
+  "Tree": {
+    "max_depth": 4,
+    "min_samples_leaf": 30
+  },
+  "RandomForest": {
+    "max_depth": 8,
+    "min_samples_leaf": 30,
+    "n_estimators": 400
+  },
+  "XGBoost": {
+    "learning_rate": 0.03,
+    "max_depth": 2,
+    "min_child_weight": 3,
+    "n_estimators": 300
+  }
+}

@@ -1,0 +1,22 @@
+,mean_abs_shap,share_%,cum_%
+OrdersPerMonth,0.3573,24.7748,24.7748
+Recency,0.27,18.7264,43.5012
+UniqueProducts,0.1704,11.8187,55.3199
+RunRateValue90_log,0.1294,8.9749,64.2948
+Orders_prev90,0.0827,5.7345,70.0294
+Spend_last90_log,0.0811,5.6223,75.6516
+OverdueRatio,0.0628,4.3557,80.0073
+Monetary_log,0.0606,4.2017,84.209
+AvgGapDays,0.0583,4.0404,88.2494
+Orders_last90,0.055,3.8109,92.0603
+Frequency,0.048,3.331,95.3913
+LastGapDays,0.0193,1.3413,96.7326
+Tenure,0.0145,1.0074,97.74
+AvgLinesPerOrder,0.0113,0.7823,98.5223
+AvgOrderValue,0.0078,0.5404,99.0627
+AvgUnitsPerOrder,0.0058,0.4049,99.4676
+MaxOrderValue_log,0.0057,0.3974,99.8649
+Region_Rest of World,0.0019,0.1351,100.0
+SingleOrder,0.0,0.0,100.0
+OrderTrend,0.0,0.0,100.0
+Region_UK,0.0,0.0,100.0

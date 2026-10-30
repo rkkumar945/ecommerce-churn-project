@@ -1,0 +1,39 @@
+{
+  "model": "XGBoost",
+  "params": {
+    "learning_rate": 0.03,
+    "max_depth": 2,
+    "min_child_weight": 3,
+    "n_estimators": 150
+  },
+  "threshold": 0.07,
+  "features": [
+    "Recency",
+    "Frequency",
+    "Monetary_log",
+    "AvgOrderValue",
+    "Tenure",
+    "UniqueProducts",
+    "AvgGapDays",
+    "LastGapDays",
+    "OverdueRatio",
+    "SingleOrder",
+    "OrdersPerMonth",
+    "RunRateValue90_log",
+    "Orders_last90",
+    "Orders_prev90",
+    "OrderTrend",
+    "Spend_last90_log",
+    "AvgUnitsPerOrder",
+    "AvgLinesPerOrder",
+    "MaxOrderValue_log",
+    "Region_Rest of World",
+    "Region_UK"
+  ],
+  "test_auc": 0.8178241196144009,
+  "assumed_costs": {
+    "FN": 50,
+    "FP": 5,
+    "TP_benefit": 40
+  }
+}

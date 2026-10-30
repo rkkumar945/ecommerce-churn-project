@@ -1,0 +1,5 @@
+model,best_cv_auc,auc_std,best_cv_ap,train_auc,minutes
+LogReg,0.7961,0.012,0.8207,0.801,0.0033
+Tree,0.785,0.0144,0.7975,0.8076,0.008
+RandomForest,0.7988,0.0154,0.8189,0.8467,0.5378
+XGBoost,0.802,0.0157,0.8232,0.8328,0.1983
