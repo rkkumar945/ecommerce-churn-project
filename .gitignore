@@ -5,3 +5,5 @@ venv/
 .ipynb_checkpoints/
 __pycache__/
 scratch/
+model/*.pkl
+model/*.joblib
