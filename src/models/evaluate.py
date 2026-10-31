@@ -78,7 +78,7 @@ def _net_value(y, pred, cost_fn=50, cost_fp=5, benefit_tp=40):
 
     The default amounts (GBP 40 / 5 / 50) are ASSUMPTIONS, not estimated from data.
     """
-    tn, fp, fn, tp = confusion_matrix(y, pred, labels=[0, 1]).ravel()
+    _tn, fp, fn, tp = confusion_matrix(y, pred, labels=[0, 1]).ravel()
     return float(benefit_tp * tp - cost_fp * fp - cost_fn * fn)
 
 

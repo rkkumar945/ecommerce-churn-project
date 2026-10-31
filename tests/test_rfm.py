@@ -1,9 +1,11 @@
+import os
+import sys
+
 import numpy as np
 import pandas as pd
-import sys
-import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # agar 'from
-from src.features.rfm import rfm_scores, assign_segment
+from src.features.rfm import assign_segment, rfm_scores
 
 
 def test_scores_stay_in_range():

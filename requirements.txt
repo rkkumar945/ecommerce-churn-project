@@ -26,4 +26,5 @@ requests>=2.31
 pytest>=7
 
 xgboost==3.4.1
-tabulate
+tabulate==1.22.0
+streamlit==1.66.1

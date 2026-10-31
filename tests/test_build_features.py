@@ -1,12 +1,11 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 # plain `pytest` bhi chale (project root ko import path mein daalo)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.features.build_features import build_customer_dataset, region_bucket  # noqa: E402
+from src.features.build_features import build_customer_dataset, region_bucket
 
 COLS = ['Customer ID', 'Invoice', 'InvoiceDate', 'Quantity', 'Price', 'Country', 'StockCode']
 

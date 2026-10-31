@@ -1,8 +1,11 @@
-import numpy as np
 import os
 import sys
+
+import numpy as np
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sklearn.metrics import roc_auc_score
+
 from src.models.bootstrap import bootstrap_metric, ci
 
 

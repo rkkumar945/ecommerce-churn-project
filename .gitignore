@@ -4,3 +4,4 @@ models/*.joblib
 venv/
 .ipynb_checkpoints/
 __pycache__/
+scratch/

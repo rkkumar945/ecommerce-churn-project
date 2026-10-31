@@ -1,7 +1,9 @@
-import numpy as np
-import pandas as pd
 import sys
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
