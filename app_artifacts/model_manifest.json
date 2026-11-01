@@ -1,0 +1,61 @@
+{
+  "model": "XGBoost",
+  "params": {
+    "learning_rate": 0.03,
+    "max_depth": 2,
+    "min_child_weight": 3,
+    "n_estimators": 150
+  },
+  "threshold": 0.07,
+  "features": [
+    "Recency",
+    "Frequency",
+    "Monetary_log",
+    "AvgOrderValue",
+    "Tenure",
+    "UniqueProducts",
+    "AvgGapDays",
+    "LastGapDays",
+    "OverdueRatio",
+    "SingleOrder",
+    "OrdersPerMonth",
+    "RunRateValue90_log",
+    "Orders_last90",
+    "Orders_prev90",
+    "OrderTrend",
+    "Spend_last90_log",
+    "AvgUnitsPerOrder",
+    "AvgLinesPerOrder",
+    "MaxOrderValue_log",
+    "Region_Rest of World",
+    "Region_UK"
+  ],
+  "test_auc": 0.8178241196144009,
+  "assumed_costs": {
+    "FN": 50,
+    "FP": 5,
+    "TP_benefit": 40
+  },
+  "created_at_utc": "2026-10-31T07:03:32+00:00",
+  "git_commit": "df14fa2",
+  "env": {
+    "python": "3.14.6",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "joblib": "1.6.0",
+    "imbalanced-learn": "0.14.2",
+    "shap": "0.54.1"
+  },
+  "serialization": "joblib",
+  "model_file": {
+    "name": "final_model.joblib",
+    "sha256": "bb3ed7b66de970c2c93a9a36be3de3d9ad8347cf3d83810c803450d4eaacdb8b",
+    "bytes": 145077
+  },
+  "table_file": {
+    "name": "customer_features_app.csv",
+    "rows": 5283
+  }
+}
