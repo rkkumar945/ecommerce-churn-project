@@ -100,3 +100,174 @@ def readable_profile(row) -> dict[str, str]:
         'Orders (last 90d)': f"{row['Orders_last90']:.0f}",
         'Orders (prior 90d)': f"{row['Orders_prev90']:.0f}",
     }
+
+
+
+
+
+    # ---------------- Day 89: real-time prediction, what-if, explanations ----------------
+WHATIF = ('Recency', 'Orders_last90', 'Orders_prev90')
+
+
+def row_to_frame(row, features: list[str]) -> pd.DataFrame:
+    """Ek customer ko model ke exact column order mein 1-row DataFrame banao."""
+    return pd.DataFrame([{f: float(row[f]) for f in features}], columns=features)
+
+
+def top_share_for(reference_scores, score: float) -> float:
+    """Sabse risky ka share (0.01 = top 1%). add_scores ke rank(method='min') jaisa hi formula."""
+    s = np.asarray(reference_scores, dtype=float)
+    return float((1 + (s > score).sum()) / len(s))
+
+
+def predict_row(model, row, features, threshold, reference_scores=None) -> dict:
+    """Real-time prediction: ek customer ke features -> score, alert flag, risk rank."""
+    score = float(model.predict_proba(row_to_frame(row, features))[0, 1])
+    out = {'score': score, 'flagged': score >= threshold}
+    if reference_scores is not None:
+        out['top_share'] = top_share_for(reference_scores, score)
+    return out
+
+
+def whatif_problems(row, changes: dict) -> list[str]:
+    """Impossible combinations ki list (khaali list = scenario possible hai).
+    Windows cutoff se peeche naapi jaati hain; 90/180 din ki seema par 1-2 din ka margin rakha hai."""
+    r = {k: float(changes.get(k, row[k])) for k in WHATIF}
+    msgs = []
+    if r['Recency'] > row['Tenure']:
+        msgs.append(f"Days since last order cannot exceed customer age ({row['Tenure']:.0f} days).")
+    if r['Orders_last90'] + r['Orders_prev90'] > row['Frequency']:
+        msgs.append(f"Orders in the two 90-day windows cannot exceed total orders ({row['Frequency']:.0f}).")
+    if r['Recency'] >= 91 and r['Orders_last90'] > 0:
+        msgs.append('Last order was more than 90 days before the cutoff, so orders in the last 90 days must be 0.')
+    if r['Recency'] <= 88 and r['Orders_last90'] < 1:
+        msgs.append('Last order was within 90 days of the cutoff, so there must be at least 1 order in that window.')
+    if r['Recency'] >= 181 and r['Orders_prev90'] > 0:
+        msgs.append('Last order was more than 180 days before the cutoff, so orders in the prior 90 days must be 0.')
+    if 92 <= r['Recency'] <= 178 and r['Orders_prev90'] < 1:
+        msgs.append('Last order fell in the prior 90-day window, so there must be at least 1 order there.')
+    return msgs
+
+
+def apply_whatif(row, changes: dict):
+    """Chuni hui values badlo, aur dependent features build_features.py ke formulas se dobara nikaalo."""
+    new = row.copy()
+    for k, v in changes.items():
+        if k not in WHATIF:
+            raise KeyError(f'{k} what-if ke liye allowed nahi hai')
+        new[k] = float(v)
+
+    new['OverdueRatio'] = (0.0 if int(new['SingleOrder']) == 1
+                           else float(new['Recency']) / max(float(new['AvgGapDays']), 1.0))
+    new['OrderTrend'] = float(new['Orders_last90']) - float(new['Orders_prev90'])
+
+    old_n, new_n = float(row['Orders_last90']), float(new['Orders_last90'])
+    if new_n == 0:
+        spend = 0.0
+    else:   # order ka size wahi maano jo pehle tha (ya 0 orders the to average order value)
+        per_order = np.expm1(float(row['Spend_last90_log'])) / old_n if old_n > 0 else float(row['AvgOrderValue'])
+        spend = per_order * new_n
+    new['Spend_last90_log'] = float(np.log1p(spend))
+    return new
+
+
+def _gbp(v) -> str:
+    return f'£{np.expm1(v):,.0f}'
+
+
+FEATURE_TEXT = {
+    'Recency': lambda v: f'{v:.0f} days between the last order and the cutoff',
+    'Frequency': lambda v: f'{v:.0f} orders so far',
+    'Monetary_log': lambda v: f'{_gbp(v)} total spend',
+    'AvgOrderValue': lambda v: f'£{v:,.0f} average order value',
+    'Tenure': lambda v: f'customer for {v:.0f} days',
+    'UniqueProducts': lambda v: f'{v:.0f} distinct products bought',
+    'AvgGapDays': lambda v: f'{v:.0f} days between orders on average',
+    'LastGapDays': lambda v: f'{v:.0f} days between the last two orders',
+    'OverdueRatio': lambda v: f'{v:.1f}x past their usual order gap',
+    'SingleOrder': lambda v: 'only one order so far' if v >= 0.5 else 'repeat customer',
+    'OrdersPerMonth': lambda v: f'{v:.2f} orders per month',
+    'RunRateValue90_log': lambda v: f'{_gbp(v)} expected 90-day spend at the past pace',
+    'Orders_last90': lambda v: f'{v:.0f} orders in the 90 days before the cutoff',
+    'Orders_prev90': lambda v: f'{v:.0f} orders in the 90 days before that',
+    'OrderTrend': lambda v: f'order count {v:+.0f} vs the previous 90 days',
+    'Spend_last90_log': lambda v: f'{_gbp(v)} spent in the 90 days before the cutoff',
+    'AvgUnitsPerOrder': lambda v: f'{v:.0f} units per order',
+    'AvgLinesPerOrder': lambda v: f'{v:.1f} product lines per order',
+    'MaxOrderValue_log': lambda v: f'{_gbp(v)} largest single order',
+    'Region_UK': lambda v: 'UK customer' if v >= 0.5 else 'non-UK customer',
+    'Region_Rest of World': lambda v: 'customer outside UK/Europe' if v >= 0.5 else 'UK or Europe customer',
+}
+
+
+def describe_feature(name: str, value) -> str:
+    fmt = FEATURE_TEXT.get(name)
+    return fmt(float(value)) if fmt else f'{name} = {float(value):.2f}'
+
+
+# ---------------- Day 90: presentation helpers ----------------
+def wilson_interval(successes: float, n: int, z: float = 1.96):
+    """Proportion ka 95% (Wilson) interval. n=0 par (nan, nan)."""
+    if n == 0:
+        return float('nan'), float('nan')
+    p = successes / n
+    denom = 1 + z**2 / n
+    centre = (p + z**2 / (2 * n)) / denom
+    half = z * np.sqrt(p * (1 - p) / n + z**2 / (4 * n**2)) / denom
+    return float(centre - half), float(centre + half)
+
+
+def top_k_summary(pool: pd.DataFrame, frac: float) -> dict:
+    """Pool ko score se rank karke top frac ka haal: precision, lift, churners ka kitna hissa reach hua."""
+    n = len(pool)
+    k = max(1, round(n * frac))
+    top = pool.sort_values('score', ascending=False).head(k)
+    base_rate = float(pool['observed_churn'].mean())
+    precision = float(top['observed_churn'].mean())
+    churners = float(pool['observed_churn'].sum())
+    return {
+        'k': k, 'n': n, 'precision': precision, 'base_rate': base_rate,
+        'lift': precision / base_rate if base_rate > 0 else float('nan'),
+        'recall': float(top['observed_churn'].sum() / churners) if churners > 0 else float('nan'),
+        'min_score': float(top['score'].min()),
+    }
+
+
+def driver_frame(model, row, features, background):
+    """Har feature ka SHAP asar, |asar| ke hisaab se sorted: (DataFrame[feature, value, shap, text], space)."""
+    from src.models.explain import explain  # shap bhaari hai, zaroorat par hi import
+
+    x = row_to_frame(row, features)
+    r = explain(model, x, background=background)
+    if r['gap'] > 1e-3:
+        raise ValueError(f"SHAP additivity check fail (gap {r['gap']:.2e})")
+    df = pd.DataFrame({'feature': features, 'value': x.iloc[0].to_numpy(),
+                       'shap': r['values'].iloc[0].to_numpy()})
+    df['text'] = [describe_feature(f, v) for f, v in zip(df['feature'], df['value'])]
+    df = df.reindex(df['shap'].abs().sort_values(ascending=False).index).reset_index(drop=True)
+    return df, r['space']
+
+
+def explain_row(model, row, features, background, k: int = 3) -> dict:
+    """Top-k 'score badhane wale' (up) aur 'ghatane wale' (down): [(feature, value, shap)]."""
+    df, space = driver_frame(model, row, features, background)
+    triples = list(zip(df['feature'], df['value'], df['shap']))
+    return {'up': [t for t in triples if t[2] > 0][:k],
+            'down': [t for t in triples if t[2] < 0][:k],
+            'space': space}
+
+
+def top_reasons(model, rows: pd.DataFrame, features, background) -> list[str]:
+    """Har row ka sabse bada 'risk badhane wala' reason, ek hi SHAP call mein."""
+    from src.models.explain import explain
+
+    X = rows[features].astype(float).reset_index(drop=True)
+    r = explain(model, X, background=background)
+    if r['gap'] > 1e-3:
+        raise ValueError(f"SHAP additivity check fail (gap {r['gap']:.2e})")
+    vals = r['values'].to_numpy()
+    out = []
+    for i in range(len(X)):
+        j = int(np.argmax(vals[i]))
+        out.append(describe_feature(features[j], X.iloc[i, j]) if vals[i, j] > 0 else '-')
+    return out
