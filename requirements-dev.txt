@@ -1,0 +1,3 @@
+pytest
+ruff
+mlflow==<jo version `mlflow --version` ne diya>

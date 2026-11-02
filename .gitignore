@@ -8,3 +8,7 @@ scratch/
 model/*.pkl
 model/*.joblib
 notebooks/model/*.joblib
+# MLflow
+mlflow_store/
+mlruns/
+mlartifacts/
