@@ -14,10 +14,9 @@ graph TD
     E --> L
     L --> M[(app_artifacts/)]
     M --> N[Streamlit app]
+```    
 
 
-
---
 
 
 ---
@@ -31,4 +30,3 @@ Audit ke mutabiq `stratified split` aur `finalize` jaise steps abhi bhi Jupyter 
 ## 3. Manual Gates (Non-Automated)
 * **Model Selection:** Final model ko approve aur choose karna completely manual process rahega (human decision via pre-registration).
 * **Test Set Evaluation:** Scheduled retraining ya automated triggers par test set evaluation auto-run nahi hoga, kyunki ek hi test set ko baar-baar evaluate karne se bias badhta hai. Scheduled retrain ke liye naya time-based holdout dataset zaroori hai.
-*
