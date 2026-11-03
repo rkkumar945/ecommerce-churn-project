@@ -1,0 +1,10 @@
+tags.family,metrics.cv_roc_auc_mean,metrics.cv_roc_auc_std,metrics.cv_ap_mean,metrics.cv_recall_mean,metrics.cv_fit_time_mean
+XGBoost,0.7988,0.016,0.8218,0.7514,0.3333
+RandomForest,0.798,0.0161,0.8219,0.7606,0.5294
+LogReg,0.7958,0.0123,0.8203,0.7455,0.0127
+LogReg,0.7958,0.0123,0.8203,0.7455,0.0157
+LogReg,0.7958,0.0123,0.8203,0.7455,0.0122
+LogReg,0.7958,0.0123,0.8203,0.7455,0.0148
+Tree,0.7753,0.0164,0.784,0.7622,0.0131
+Tree,0.7753,0.0164,0.784,0.7622,0.0156
+Tree,0.7753,0.0164,0.784,0.7622,0.0145

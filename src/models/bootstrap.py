@@ -1,8 +1,11 @@
 """Bootstrap confidence intervals (paired: same resamples for every model)."""
+
 import numpy as np
 
 
-def bootstrap_metric(y, scores: dict, metric, n_boot: int = 2000, seed: int = 42) -> dict:
+def bootstrap_metric(
+    y, scores: dict, metric, n_boot: int = 2000, seed: int = 42
+) -> dict:
     """Har model ke liye metric ke n_boot values. Resamples sab models ke liye same, to differences paired hote hain."""
     rng = np.random.default_rng(seed)
     y = np.asarray(y)
@@ -10,7 +13,7 @@ def bootstrap_metric(y, scores: dict, metric, n_boot: int = 2000, seed: int = 42
     out = {k: [] for k in scores}
     for _ in range(n_boot):
         idx = rng.integers(0, n, n)
-        if y[idx].min() == y[idx].max():          # ek hi class aa gayi, AUC define nahi
+        if y[idx].min() == y[idx].max():  # ek hi class aa gayi, AUC define nahi
             continue
         for k, s in scores.items():
             out[k].append(metric(y[idx], np.asarray(s)[idx]))

@@ -62,7 +62,12 @@ def _scores(y, pred, score):
 
 def _threshold_f1(y, score):
     precision, recall, thresholds = precision_recall_curve(y, score)
-    f1 = 2 * precision[:-1] * recall[:-1] / np.maximum(precision[:-1] + recall[:-1], 1e-15)
+    f1 = (
+        2
+        * precision[:-1]
+        * recall[:-1]
+        / np.maximum(precision[:-1] + recall[:-1], 1e-15)
+    )
     i = int(np.nanargmax(f1))
     return float(thresholds[i]), float(f1[i])
 
@@ -86,8 +91,18 @@ def _take(data, idx):
     return data.iloc[idx] if hasattr(data, "iloc") else data[idx]
 
 
-def evaluate_classifier(model, X_tr, y_tr, X_te, y_te, cv,
-                        cost_fn=50, cost_fp=5, benefit_tp=40, default_threshold=None):
+def evaluate_classifier(
+    model,
+    X_tr,
+    y_tr,
+    X_te,
+    y_te,
+    cv,
+    cost_fn=50,
+    cost_fp=5,
+    benefit_tp=40,
+    default_threshold=None,
+):
     """CV mean/std + OOF-chosen thresholds + test metrics + business net value.
 
     default_threshold=None -> 0.5 if the model has predict_proba, else 0.0.
@@ -109,7 +124,9 @@ def evaluate_classifier(model, X_tr, y_tr, X_te, y_te, cv,
         for metric in METRICS:
             fold[f"test_{metric}"].append(s[_TEST_KEY.get(metric, metric)])
     fold = {k: np.asarray(v) for k, v in fold.items()}
-    assert (seen == 1).all(), "cv must cover every training row exactly once (no repeated CV)"
+    assert (seen == 1).all(), (
+        "cv must cover every training row exactly once (no repeated CV)"
+    )
 
     thr_f1, oof_best_f1 = _threshold_f1(y_arr, oof_score)
     thr_youden = _threshold_youden(y_arr, oof_score)
@@ -124,8 +141,13 @@ def evaluate_classifier(model, X_tr, y_tr, X_te, y_te, cv,
 
     return {
         "fold": fold,
-        "cv_metrics": {m: {"mean": float(fold[f"test_{m}"].mean()),
-                           "std": float(fold[f"test_{m}"].std(ddof=1))} for m in METRICS},
+        "cv_metrics": {
+            m: {
+                "mean": float(fold[f"test_{m}"].mean()),
+                "std": float(fold[f"test_{m}"].std(ddof=1)),
+            }
+            for m in METRICS
+        },
         "default_threshold": float(thr_default),
         "oof_probability": oof_score,
         "oof_prediction": (oof_score >= thr_default).astype(int),

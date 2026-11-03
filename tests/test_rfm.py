@@ -4,7 +4,9 @@ import sys
 import numpy as np
 import pandas as pd
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # agar 'from
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)  # agar 'from
 from src.features.rfm import assign_segment, rfm_scores
 
 
@@ -29,4 +31,4 @@ def test_ties_get_same_score():
 
 def test_segment_rules():
     seg = assign_segment(pd.Series([5, 1]), pd.Series([5, 1]), pd.Series([5, 1]))
-    assert list(seg) == ['Champions', 'Hibernating']
+    assert list(seg) == ["Champions", "Hibernating"]

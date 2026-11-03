@@ -1,4 +1,5 @@
 """SHAP helpers: model-type ke hisaab se explainer, churn (class 1) ke values return."""
+
 import numpy as np
 import pandas as pd
 import shap
@@ -19,18 +20,23 @@ def _base_value(ev):
 
 
 def _shap_for_estimator(est, Xt, bg_t):
-    if hasattr(est, 'coef_'):                                  # linear model
+    if hasattr(est, "coef_"):  # linear model
         ex = shap.LinearExplainer(est, bg_t)
         values = _positive_class(ex.shap_values(Xt))
-        output, space = est.decision_function(Xt), 'log-odds'
-    else:                                                      # tree-based
+        output, space = est.decision_function(Xt), "log-odds"
+    else:  # tree-based
         ex = shap.TreeExplainer(est)
         values = _positive_class(ex.shap_values(Xt))
-        if type(est).__name__ == 'XGBClassifier':
-            output, space = est.predict(Xt, output_margin=True), 'log-odds'
+        if type(est).__name__ == "XGBClassifier":
+            output, space = est.predict(Xt, output_margin=True), "log-odds"
         else:
-            output, space = est.predict_proba(Xt)[:, 1], 'probability'
-    return values, _base_value(ex.expected_value), np.asarray(output, dtype=float), space
+            output, space = est.predict_proba(Xt)[:, 1], "probability"
+    return (
+        values,
+        _base_value(ex.expected_value),
+        np.asarray(output, dtype=float),
+        space,
+    )
 
 
 def explain(model, X: pd.DataFrame, background: pd.DataFrame | None = None) -> dict:
@@ -39,17 +45,27 @@ def explain(model, X: pd.DataFrame, background: pd.DataFrame | None = None) -> d
     X = X.reset_index(drop=True)
     if isinstance(model, Pipeline):
         prep, est = model[:-1], model[-1]
-        names = [n.split('__')[-1] for n in prep.get_feature_names_out()]
+        names = [n.split("__")[-1] for n in prep.get_feature_names_out()]
         Xt = pd.DataFrame(prep.transform(X), columns=names)
-        bg_t = pd.DataFrame(prep.transform(X if background is None else background), columns=names)
+        bg_t = pd.DataFrame(
+            prep.transform(X if background is None else background), columns=names
+        )
     else:
         est, Xt = model, X
         bg_t = X if background is None else background
 
     values, base, output, space = _shap_for_estimator(est, Xt, bg_t)
-    values = pd.DataFrame(values, columns=Xt.columns)[list(X.columns)]   # ColumnTransformer ne order badla ho to wapas theek
+    values = pd.DataFrame(values, columns=Xt.columns)[
+        list(X.columns)
+    ]  # ColumnTransformer ne order badla ho to wapas theek
     gap = float(np.abs(values.sum(axis=1).to_numpy() + base - output).max())
-    return {'values': values, 'base': base, 'output': output, 'space': space, 'gap': gap}
+    return {
+        "values": values,
+        "base": base,
+        "output": output,
+        "space": space,
+        "gap": gap,
+    }
 
 
 def reason_codes(values_row, x_row: pd.Series, k: int = 3):
