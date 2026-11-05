@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 # plain `pytest` bhi chale (project root ko import path mein daalo)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -162,3 +163,25 @@ def test_features_invariant_to_future_rows():
 
     cols = [c for c in base.columns if c != "Churned"]
     pd.testing.assert_frame_equal(base[cols], changed[cols])
+
+
+
+
+
+def test_default_as_of_matches_explicit_max():
+    tx = make_tx()
+    pd.testing.assert_frame_equal(build_customer_dataset(tx),
+                                  build_customer_dataset(tx, as_of=tx['InvoiceDate'].max()))
+
+
+def test_as_of_hides_later_transactions():
+    out = build_customer_dataset(make_tx(), as_of='2011-11-01').set_index('Customer ID')
+    assert set(out.index) == {1, 2}
+    assert out['Churned'].tolist() == [1, 1]        # 2011-11-20 wala order ab dikhta hi nahi (default mein customer 2 = 0)
+
+
+def test_as_of_beyond_data_or_before_data_is_rejected():
+    with pytest.raises(ValueError):
+        build_customer_dataset(make_tx(), as_of='2012-03-01')
+    with pytest.raises(ValueError):
+        build_customer_dataset(make_tx(), as_of='2010-01-01')

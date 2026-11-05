@@ -66,7 +66,7 @@ def make_xy(df: pd.DataFrame, num_cols: list[str]) -> pd.DataFrame:
 
 
 def build_customer_dataset(
-    tx: pd.DataFrame, horizon_days: int = 90, exclude_non_product: bool = False
+    tx: pd.DataFrame, horizon_days: int = 90, as_of=None, exclude_non_product: bool = False
 ) -> pd.DataFrame:
     """Features sirf cutoff se pehle ke transactions se; label cutoff ke baad ke window se."""
     tx = tx.copy()
@@ -77,7 +77,15 @@ def build_customer_dataset(
 
     tx["LineTotal"] = tx["Quantity"] * tx["Price"]
 
-    cutoff = tx["InvoiceDate"].max() - pd.Timedelta(days=horizon_days)
+    data_max = tx['InvoiceDate'].max()
+    end = pd.Timestamp(as_of) if as_of is not None else data_max
+    if end > data_max + pd.Timedelta(days=1):
+        raise ValueError(f'as_of={as_of} data ki aakhri date ({data_max}) se aage hai: labels galat banenge')
+    tx = tx[tx['InvoiceDate'] <= end]
+    if tx.empty:
+        raise ValueError(f'as_of={as_of} se pehle koi transaction nahi')
+
+    cutoff = end - pd.Timedelta(days=horizon_days)
     past = tx[tx["InvoiceDate"] < cutoff]
     future = tx[tx["InvoiceDate"] >= cutoff]
 

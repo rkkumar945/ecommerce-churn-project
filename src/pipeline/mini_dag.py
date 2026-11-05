@@ -40,14 +40,13 @@ class DAG:
                 if d not in self.tasks:
                     raise ValueError(f'{t.name} depends on unknown task {d}')
         self.state_dir = Path(state_dir)
-        self.state_dir.mkdir(parents=True, exist_ok=True)
-        self._sorter().prepare()                         # cycle ho to yahin CycleError
+        
+        self._sorter().prepare()
 
     def _sorter(self) -> TopologicalSorter:
         return TopologicalSorter({n: set(t.deps) for n, t in self.tasks.items()})
 
     def levels(self) -> list[list[str]]:
-        """Har level ke tasks ek saath chal sakte hain (parallelism ka idea)."""
         ts = self._sorter()
         ts.prepare()
         out = []
@@ -65,7 +64,7 @@ class DAG:
 
     def _is_fresh(self, t: Task, fp: str) -> bool:
         state = self.state_dir / f'{t.name}.json'
-        if not t.outputs or not state.exists():          # bina outputs wala task hamesha chalega
+        if not t.outputs or not state.exists():
             return False
         if json.loads(state.read_text()).get('fingerprint') != fp:
             return False
@@ -78,7 +77,7 @@ class DAG:
                 t.fn()
                 log(f'[{t.name}] success in {time.perf_counter() - t0:.2f}s (attempt {attempt + 1})')
                 return 'success'
-            except Exception as e:  # noqa: BLE001
+            except Exception as e: # noqa: BLE001
                 log(f'[{t.name}] attempt {attempt + 1} failed: {e!r}')
                 if attempt < t.retries:
                     time.sleep(t.retry_delay)
@@ -86,6 +85,7 @@ class DAG:
 
     def run(self, force: bool = False, log=print) -> dict[str, str]:
         status: dict[str, str] = {}
+        self.state_dir.mkdir(parents=True, exist_ok=True)
         for name in self.order():
             t = self.tasks[name]
             blocked = [d for d in t.deps if status.get(d) in ('failed', 'skipped_upstream')]
@@ -102,3 +102,29 @@ class DAG:
             if status[name] == 'success':
                 (self.state_dir / f'{name}.json').write_text(json.dumps({'fingerprint': fp}))
         return status
+
+    def plan(self, force: bool = False) -> dict[str, str]:
+        """Dry run: kya chalega? Upstream chalega to downstream 'maybe'"""
+        out = {}
+        for name in self.order():
+            t = self.tasks[name]
+            if force:
+                out[name] = 'would_run'
+            elif any(out[d] != 'cached' for d in t.deps):
+                out[name] = 'maybe'
+            else:
+                out[name] = 'cached' if self._is_fresh(t, self._fingerprint(t)) else 'would_run'
+        return out
+
+def plan(self, force: bool = False) -> dict[str, str]:
+    """Dry run: kya chalega? Upstream chalega to downstream 'maybe'"""
+    out = {}
+    for name in self.order():
+        t = self.tasks[name]
+        if force:
+            out[name] = 'would_run'
+        elif any(out[d] != 'cached' for d in t.deps):
+            out[name] = 'maybe'
+        else:
+            out[name] = 'cached' if self._is_fresh(t, self._fingerprint(t)) else 'would_run'
+    return out    

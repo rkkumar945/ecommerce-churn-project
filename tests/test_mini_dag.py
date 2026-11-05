@@ -97,3 +97,31 @@ def test_version_bump_invalidates_cache(tmp_path):
     assert DAG([Task('b', build, inputs=[src], outputs=[out], version='1')], state).run(log=quiet) == {'b': 'success'}
     assert DAG([Task('b', build, inputs=[src], outputs=[out], version='1')], state).run(log=quiet) == {'b': 'cached'}
     assert DAG([Task('b', build, inputs=[src], outputs=[out], version='2')], state).run(log=quiet) == {'b': 'success'}
+
+
+
+
+
+
+def test_plan_is_a_dry_run(tmp_path):
+    src, mid, out = tmp_path / 'in.txt', tmp_path / 'mid.txt', tmp_path / 'out.txt'
+    src.write_text('a')
+    calls = []
+
+    def t1():
+        calls.append('t1')
+        mid.write_text(src.read_text())
+
+    def t2():
+        calls.append('t2')
+        out.write_text(mid.read_text())
+
+    dag = DAG([Task('t1', t1, inputs=[src], outputs=[mid]),
+               Task('t2', t2, deps=['t1'], inputs=[mid], outputs=[out])], tmp_path / 'state')
+    assert dag.plan() == {'t1': 'would_run', 't2': 'maybe'}
+    assert calls == [] and not (tmp_path / 'state').exists()
+    dag.run(log=quiet)
+    assert dag.plan() == {'t1': 'cached', 't2': 'cached'}
+    src.write_text('b')
+    assert dag.plan() == {'t1': 'would_run', 't2': 'maybe'}
+    assert dag.plan(force=True) == {'t1': 'would_run', 't2': 'would_run'}

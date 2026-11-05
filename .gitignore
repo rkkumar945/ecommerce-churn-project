@@ -12,3 +12,7 @@ notebooks/model/*.joblib
 mlflow_store/
 mlruns/
 mlartifacts/
+*.joblib
+*.pkl
+!app_artifacts/*.joblib
+pipeline_runs/
