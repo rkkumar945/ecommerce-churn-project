@@ -1,6 +1,6 @@
 # Deployment
 
-- **Live app:** https://<subdomain>.streamlit.app
+- **Live app:** https://ecommerce-churn-project.streamlit.app/
 - **Platform:** Streamlit Community Cloud (free tier, no SLA)
 - **Source:** GitHub `main`, entrypoint `src/app/app.py`, dependencies in `src/app/requirements.txt`
 - **Python:** <x.y> (same minor version as the model build, see `app_artifacts/model_manifest.json`)
