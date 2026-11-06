@@ -1,0 +1,226 @@
+{
+  "metrics": [
+    {
+      "id": "15e89f895b482f9b84ba7274ed18a106",
+      "metric_name": "DriftedColumnsCount(drift_share=0.5)",
+      "config": {
+        "type": "evidently:metric_v2:DriftedColumnsCount",
+        "drift_share": 0.5
+      },
+      "value": {
+        "count": 8.0,
+        "share": 0.42105263157894735
+      }
+    },
+    {
+      "id": "734c983fe748d60f51530462d50ad506",
+      "metric_name": "ValueDrift(column=Recency,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Recency",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.5734922231344555
+    },
+    {
+      "id": "df679d68bea1114f25266feeba56dd1a",
+      "metric_name": "ValueDrift(column=Frequency,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Frequency",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.0992560076920285
+    },
+    {
+      "id": "400ab6c11c03ef1a35f4586566de5caf",
+      "metric_name": "ValueDrift(column=Monetary_log,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Monetary_log",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.07126777543359403
+    },
+    {
+      "id": "f50ec7ce61ec5d457892cb46e03bda2f",
+      "metric_name": "ValueDrift(column=AvgOrderValue,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "AvgOrderValue",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.018752439030566406
+    },
+    {
+      "id": "44af7ff50b9319ad30493a39cabd4056",
+      "metric_name": "ValueDrift(column=Tenure,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Tenure",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.9919356671692079
+    },
+    {
+      "id": "b366073105a0b732741813316d24b450",
+      "metric_name": "ValueDrift(column=UniqueProducts,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "UniqueProducts",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.08216089100195573
+    },
+    {
+      "id": "6c254dc7b5ddc60f1788a4af351533c9",
+      "metric_name": "ValueDrift(column=AvgGapDays,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "AvgGapDays",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.20613366440016742
+    },
+    {
+      "id": "da0d07f70b407798923ad5b5570e5568",
+      "metric_name": "ValueDrift(column=LastGapDays,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "LastGapDays",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.2384871172821466
+    },
+    {
+      "id": "e5bfb28df9ea3af4acb67596fe67e86d",
+      "metric_name": "ValueDrift(column=OverdueRatio,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "OverdueRatio",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.08019773413620472
+    },
+    {
+      "id": "1c8ef8ce2845ef2f39e8948a440174d4",
+      "metric_name": "ValueDrift(column=SingleOrder,method=Jensen-Shannon distance,threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "SingleOrder",
+        "method": "Jensen-Shannon distance",
+        "threshold": 0.1
+      },
+      "value": 0.02422970274674632
+    },
+    {
+      "id": "070577c8eef256432b2d3b2bdb665fc5",
+      "metric_name": "ValueDrift(column=OrdersPerMonth,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "OrdersPerMonth",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.12107751451699834
+    },
+    {
+      "id": "260faec4d457d3ba0882aaf57774e826",
+      "metric_name": "ValueDrift(column=RunRateValue90_log,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "RunRateValue90_log",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.22533225614438748
+    },
+    {
+      "id": "faa08bb56475c684a0f98c0b13cafdcb",
+      "metric_name": "ValueDrift(column=Orders_last90,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Orders_last90",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.0646696814603674
+    },
+    {
+      "id": "55eeb5a7731db9533e2c4014a37dfd22",
+      "metric_name": "ValueDrift(column=Orders_prev90,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Orders_prev90",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.23319246950071904
+    },
+    {
+      "id": "06e579a1206d56e665e2c5f2376a1640",
+      "metric_name": "ValueDrift(column=OrderTrend,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "OrderTrend",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.3415213873316786
+    },
+    {
+      "id": "6bb86a0c50d0049bb3babc6072469a80",
+      "metric_name": "ValueDrift(column=Spend_last90_log,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "Spend_last90_log",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.027565931688212135
+    },
+    {
+      "id": "14e0304ee730a42a9da9a99c8093f0dc",
+      "metric_name": "ValueDrift(column=AvgUnitsPerOrder,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "AvgUnitsPerOrder",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.006471510729377817
+    },
+    {
+      "id": "914102c0cddc914b98d4a64b8f1cf7de",
+      "metric_name": "ValueDrift(column=AvgLinesPerOrder,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "AvgLinesPerOrder",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.027810099252938158
+    },
+    {
+      "id": "2d7c3ccd615aaa36740cc02d269e07e2",
+      "metric_name": "ValueDrift(column=MaxOrderValue_log,method=Wasserstein distance (normed),threshold=0.1)",
+      "config": {
+        "type": "evidently:metric_v2:ValueDrift",
+        "column": "MaxOrderValue_log",
+        "method": "Wasserstein distance (normed)",
+        "threshold": 0.1
+      },
+      "value": 0.013372778682495026
+    }
+  ],
+  "tests": []
+}

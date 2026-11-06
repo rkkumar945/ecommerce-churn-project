@@ -1,0 +1,5 @@
+recency_shift_days,psi_Recency,psi_OverdueRatio,score_psi,alert_rate
+0,0.009,0.021,0.007,0.96
+15,0.304,0.096,0.015,0.968
+30,0.412,0.21,0.02,0.987
+60,0.586,0.533,0.02,1.0
