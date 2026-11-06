@@ -1,8 +1,10 @@
 """App ka logic (Streamlit se alag, taaki test ho sake aur agent/API bhi reuse kar sake)."""
 
+
 import hashlib
 import importlib.metadata as md
 import json
+import platform
 from pathlib import Path
 
 import joblib
@@ -312,4 +314,18 @@ def top_reasons(model, rows: pd.DataFrame, features, background) -> list[str]:
         out.append(
             describe_feature(features[j], X.iloc[i, j]) if vals[i, j] > 0 else "-"
         )
+    return out
+
+
+
+
+
+def runtime_env() -> dict:
+    """Abhi jis environment mein app chal rahi hai (cloud par yahi dikhega)."""
+    out = {'python': platform.python_version()}
+    for lib in ('scikit-learn', 'xgboost', 'numpy', 'pandas', 'joblib', 'shap', 'streamlit'):
+        try:
+            out[lib] = md.version(lib)
+        except md.PackageNotFoundError:
+            pass
     return out

@@ -21,6 +21,7 @@ from src.app.service import (
     pick_random,
     predict_row,
     readable_profile,
+    runtime_env,
     top_k_summary,
     top_reasons,
     whatif_problems,
@@ -482,12 +483,8 @@ on out-of-fold predictions using assumed costs (missing a churner is costly, a w
 - Explanations show what the model uses, not what causes churn. The what-if sliders are sensitivity checks.
 - The test set is small, so every number has a wide uncertainty band.
 """)
-    with st.expander("Build details"):
-        st.json(
-            {
-                "git_commit": manifest["git_commit"],
-                "built_utc": manifest["created_at_utc"],
-                "serialization": manifest["serialization"],
-                "env": manifest["env"],
-            }
-        )
+
+    with st.expander('Build details'):
+                st.json({'git_commit': manifest['git_commit'], 'built_utc': manifest['created_at_utc'],
+                'serialization': manifest['serialization'],
+                'built_with': manifest['env'], 'running_on': runtime_env()})
