@@ -34,7 +34,7 @@ def _placeholder_tokens(text: str) -> list:
 
 def _prose() -> str:
     """Code fences hata ke: unke andar ke '# comment' headings nahi hote aur links check nahi hote."""
-    return re.sub(r'```.*?```', '', _text(), flags=re.S)
+    return re.sub(r'```.*?```', '', _text(), flags=re.DOTALL)
 
 
 def _slug(title: str) -> str:
@@ -43,7 +43,7 @@ def _slug(title: str) -> str:
 
 def _anchors() -> set:
     seen, out = {}, set()
-    for m in re.finditer(r'^#{1,6}\s+(.+?)\s*$', _prose(), flags=re.M):
+    for m in re.finditer(r'^#{1,6}\s+(.+?)\s*$', _prose(), flags=re.MULTILINE):
         slug = _slug(m.group(1))
         n = seen.get(slug, 0)
         out.add(slug if n == 0 else f'{slug}-{n}')
@@ -116,6 +116,6 @@ def test_headline_numbers_match_the_model_card():
 
 
 def test_required_sections_exist():
-    heads = {m.group(1).strip().lower() for m in re.finditer(r'^##\s+(.+?)\s*$', _prose(), flags=re.M)}
+    heads = {m.group(1).strip().lower() for m in re.finditer(r'^##\s+(.+?)\s*$', _prose(), flags=re.MULTILINE)}
     for needed in ('limitations', 'how to run', 'results', 'roadmap', 'system architecture'):
         assert any(needed in h for h in heads), f'section missing: {needed}'

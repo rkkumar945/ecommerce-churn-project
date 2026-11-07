@@ -36,9 +36,20 @@ for name in ('cv_ensembles_day83.csv', 'nested_cv_day84.csv', 'shap_group_import
 p = ROOT / 'reports' / 'model_comparison_report.md'
 show('reports/model_comparison_report.md', p.read_text(encoding='utf-8') if p.exists() else 'MISSING')
 
-lines = subprocess.run([sys.executable, '-m', 'pytest', '--collect-only', '-q'], cwd=ROOT,
-                       capture_output=True, text=True).stdout.strip().splitlines()
+lines = subprocess.run(
+    [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+    check=False,  # <-- Yeh add karein
+    cwd=ROOT,
+    capture_output=True,
+    text=True,
+).stdout.strip().splitlines()
 show('Automated tests', lines[-1] if lines else 'pytest output empty')
 
-commits = subprocess.run(['git', 'rev-list', '--count', 'HEAD'], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+commits = subprocess.run(
+    ["git", "rev-list", "--count", "HEAD"],
+    check=False,  # <-- Yeh add karein
+    cwd=ROOT,
+    capture_output=True,
+    text=True,
+).stdout.strip()
 show('Repo', {'commits': commits, 'notebooks': len(list((ROOT / 'notebooks').rglob('*.ipynb')))})

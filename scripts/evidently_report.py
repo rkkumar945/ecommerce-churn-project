@@ -2,23 +2,23 @@
     python scripts/evidently_report.py --ref scratch/_drift_ref.csv --cur scratch/_drift_cur.csv --out reports/evidently_drift.html
 """
 import sys
+
 import pandas as pd
 import pandas.core.dtypes.common
+
 if not hasattr(pd.core.dtypes.common, "infer_dtype_from_object"):
     def _dummy_infer(val):
         return None
     pd.core.dtypes.common.infer_dtype_from_object = _dummy_infer  # evidently <0.7 mein ye chahiye, pandas >=2.0 mein hata diya
 
-from pathlib import Path
 import argparse
 import json
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).resolve().parent.parent))   # repo root ke src ko import path mein daalo
 
 
 import evidently
-
-
 
 
 def new_api(ref, cur, cols):                       # evidently >= 0.7
@@ -66,7 +66,6 @@ def main():
 )
     a = ap.parse_args()
 
-    import evidently
     print('evidently', getattr(evidently, '__version__', 'unknown'))
     ref, cur = pd.read_csv(a.ref), pd.read_csv(a.cur)
     cols = [c for c in ref.columns if c in cur.columns]
