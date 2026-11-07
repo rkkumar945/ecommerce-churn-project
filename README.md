@@ -135,7 +135,7 @@ Live at https://ecommerce-churn-project.streamlit.app/
 | Silent bad data | Data contracts, a freshness guard on `as_of`, a sealed holdout in the pipeline | `tests/test_checks.py`, `tests/test_run_pipeline.py` |
 | Drift | PSI with an A/A calibration and an alert policy | `tests/test_drift.py` |
 
-99 automated tests, 76 commits, all analysis reproducible from the notebooks and `src/`.
+100 automated tests, 70+ commits, all analysis reproducible from the notebooks and `src/`.
 
 ## Repository Structure
 ```

@@ -18,6 +18,20 @@ def _text() -> str:
     return README.read_text(encoding='utf-8')
 
 
+def _placeholder_tokens(text: str) -> list:
+    non_task_list_text = '\n'.join(
+        line for line in text.splitlines()
+        if not re.match(r'^\s*[-*+]\s+\[[ xX]\]', line)
+    )
+    found = [
+        b for b in BANNED
+        if b != '[X]' and b.lower() in non_task_list_text.lower()
+    ]
+    if '[X]' in text:
+        found.append('[X]')
+    return found
+
+
 def _prose() -> str:
     """Code fences hata ke: unke andar ke '# comment' headings nahi hote aur links check nahi hote."""
     return re.sub(r'```.*?```', '', _text(), flags=re.S)
@@ -54,9 +68,13 @@ def _exists_exact(rel: str) -> bool:
 
 def test_no_placeholders_and_balanced_fences():
     text = _text()
-    found = [b for b in BANNED if b.lower() in text.lower()]
+    found = _placeholder_tokens(text)
     assert not found, f'placeholders bache hain: {found}'
     assert text.count('```') % 2 == 0, 'code fence band nahi hua'
+
+
+def test_task_list_checkboxes_are_not_placeholders():
+    assert not _placeholder_tokens('- [x] done\n- [ ] todo')
 
 
 def test_live_url_present_and_consistent():
