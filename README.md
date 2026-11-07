@@ -31,7 +31,7 @@
 3. **Final evaluation:** [reports/model_comparison_report.md](reports/model_comparison_report.md)
 4. **Design notes:** [retraining](docs/retraining_design.md), [monitoring](docs/monitoring_plan.md), [deployment](docs/deployment.md)
 
-The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On a sealed held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). <<FILL: business reading, for example "contacting the top 10% of customers reaches X% of those who do not return, at a lift of Y".>>
+The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On a sealed held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). Contacting the 10% highest-scored held-out customers finds non-returners with 92.5% precision (lift 1.634x, against a 56.6% base rate) and reaches 16.4% of all non-returners.
 
 ## Business Problem
 Winning a new customer usually costs more than keeping an existing one, and a retention team can only contact so many people.
@@ -40,7 +40,7 @@ The useful output is therefore a **ranking**: who is most likely to stop buying,
 ## Dataset
 **Online Retail II** (UCI / Kaggle): 1,067,371 transactions from a UK-based online retailer, Dec 2009 to Dec 2011, 43 countries,
 5,942 identified customers. 22.8% of rows have no Customer ID (guest checkouts, dropped) and 19,494 rows are cancellations (removed).
-The modelling table contains 5,283 customers. <<FILL: one line on why 5,942 became 5,283, after you verify it.>>
+The modelling table contains 5,283 customers: 61 customers whose records contain only cancellations are removed, and 598 more are dropped because they have no purchase before the cutoff date.
 The raw data is not stored in this repo, see [data/README.md](data/README.md).
 
 ## Approach
@@ -78,7 +78,7 @@ before the held-out set was scored.
 | Test ROC-AUC (95% bootstrap CI) | 0.818 (0.791 to 0.843) |
 | Test PR-AUC (base rate) | 0.838 (0.566) |
 | Alert threshold | 0.07, chosen on out-of-fold predictions with assumed costs |
-| Top 10% targeting | precision <<FILL>>, lift <<FILL>>x, reaches <<FILL>>% of non-returners |
+| Top 10% targeting | precision 0.925 (95% bootstrap CI 0.858 to 0.962), lift 1.634x, reaches 16.4% of non-returners |
 
 Nested cross-validation (honest estimate after tuning):
 
@@ -90,8 +90,8 @@ Nested cross-validation (honest estimate after tuning):
 | XGBoost | 0.803 |
 
 **Key findings** (forward-looking ML label unless stated)
-- <<FILL: EDA finding 1 from Day 77, with number and label type (descriptive EDA label).>>
-- <<FILL: EDA finding 2 from Day 77.>>
+- Descriptive EDA label (whole-period, Recency-based): customers with one order churn at 77.5%, against 29.4% for customers with 4 or more orders.
+- Descriptive EDA label: VIP customers churn at 13.6%, against 55.3% for Regular customers.
 - The top SHAP feature group is Frequency / volume (importance 0.474), followed by Recency / timing (0.342), Monetary / value (0.228) and Basket / product (0.181). Tenure (0.014) and Geography (0.002) add almost nothing.
 - Nested CV scores for Logistic Regression (0.796), Random Forest (0.802) and XGBoost (0.803) sit within one standard deviation (about 0.014 to 0.016) of each other, so the model choice is not statistically decisive.
 - At the chosen threshold of 0.07 the model has recall 0.998 and precision 0.586 against a base rate of 0.566: it flags almost every customer, so the ranking (AUC 0.818) is the useful output, not the alert flag alone.
@@ -104,7 +104,7 @@ flowchart TD
     C --> D["Train / sealed holdout"]
     D --> E["CV + tuning<br/>LogReg, Tree, Random Forest, XGBoost"]
     E --> F[["MLflow tracking<br/>CV metrics only"]]
-    E --> G{{"Pre-registered model choice<br/>committed before the test"}}
+    E --> G(["Pre-registered model choice<br/>committed before the test"])
     G --> H["One-time holdout evaluation<br/>bootstrap CIs, threshold from OOF"]
     H --> I[("app_artifacts<br/>model + manifest sha256 + customer table")]
     I --> J["Streamlit app<br/>Community Cloud"]
@@ -135,7 +135,7 @@ Live at https://ecommerce-churn-project.streamlit.app/
 | Silent bad data | Data contracts, a freshness guard on `as_of`, a sealed holdout in the pipeline | `tests/test_checks.py`, `tests/test_run_pipeline.py` |
 | Drift | PSI with an A/A calibration and an alert policy | `tests/test_drift.py` |
 
-98 automated tests, 74 commits, all analysis reproducible from the notebooks and `src/`.
+99 automated tests, 76 commits, all analysis reproducible from the notebooks and `src/`.
 
 ## Repository Structure
 ```
@@ -154,7 +154,7 @@ Live at https://ecommerce-churn-project.streamlit.app/
 
 ## How to Run
 ```bash
-git clone https://github.com/https://github.com/rkkumar945/ecommerce-churn-project.git
+git clone https://github.com/rkkumar945/ecommerce-churn-project.git
 cd ecommerce-churn-project
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
