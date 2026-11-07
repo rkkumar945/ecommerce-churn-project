@@ -154,7 +154,7 @@ Live at https://ecommerce-churn-project.streamlit.app/
 
 ## How to Run
 ```bash
-git clone https://github.com/<<FILL: github username>>/ecommerce-churn-project.git
+git clone https://github.com/https://github.com/rkkumar945/ecommerce-churn-project.git
 cd ecommerce-churn-project
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
