@@ -2,6 +2,7 @@ data/
 models/*.pkl
 models/*.joblib
 venv/
+.venv*/
 .ipynb_checkpoints/
 __pycache__/
 scratch/
