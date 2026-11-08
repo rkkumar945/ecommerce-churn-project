@@ -3,8 +3,8 @@
 - **Live app:** https://ecommerce-churn-project.streamlit.app/
 - **Platform:** Streamlit Community Cloud (free tier, no SLA)
 - **Source:** GitHub `main`, entrypoint `src/app/app.py`, dependencies in `src/app/requirements.txt`
-- **Python:** <x.y> (same minor version as the model build, see `app_artifacts/model_manifest.json`)
-- **Deployed commit:** <hash> | **Date:** <date>
+- **Python:** 3.14 (same minor version as the model build, see `app_artifacts/model_manifest.json`)
+- **Deployed commit:** see the About tab of the app (Build details) | **Date:** see the About tab of the app (Build details)
 
 ## How updates work
 Every push to `main` redeploys the app. Dependency changes trigger a full rebuild. Run `pytest` and the local

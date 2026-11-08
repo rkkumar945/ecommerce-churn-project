@@ -1,4 +1,5 @@
-data/
+data/*
+!data/README.md
 models/*.pkl
 models/*.joblib
 venv/
@@ -17,3 +18,7 @@ mlartifacts/
 *.pkl
 !app_artifacts/*.joblib
 pipeline_runs/
+.env
+.DS_Store
+.pytest_cache/
+.ruff_cache/

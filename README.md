@@ -27,11 +27,13 @@
 
 ## Start Here
 1. **Live app:** [ecommerce-churn-project.streamlit.app](https://ecommerce-churn-project.streamlit.app/). Pick a customer from the held-out (test) split for an honest score.
-2. **EDA report:** [notebooks/month3_statistics_eda/63_eda_report_final.ipynb](notebooks/month3_statistics_eda/63_eda_report_final.ipynb)
+2. **EDA report:** [notebooks/month3_statistics_eda/59_churn_rate_analysis.ipynb](notebooks/month3_statistics_eda/59_churn_rate_analysis.ipynb)
 3. **Final evaluation:** [reports/model_comparison_report.md](reports/model_comparison_report.md)
 4. **Design notes:** [retraining](docs/retraining_design.md), [monitoring](docs/monitoring_plan.md), [deployment](docs/deployment.md)
 
-The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On a sealed held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). Contacting the 10% highest-scored held-out customers finds non-returners with 92.5% precision (lift 1.634x, against a 56.6% base rate) and reaches 16.4% of all non-returners.
+The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On the held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). Contacting the 10% highest-scored held-out customers finds non-returners with 92.5% precision (lift 1.634x; with a 56.6% base rate the maximum possible lift is about 1.77) and reaches 16.4% of all non-returners.
+
+The final model was chosen on cross-validation only, and the held-out set was scored once for the final report. Earlier Month 4 notebooks also reported test scores for baseline models; see [reports/test_comparison_day70.csv](reports/test_comparison_day70.csv).
 
 ## Business Problem
 Winning a new customer usually costs more than keeping an existing one, and a retention team can only contact so many people.
@@ -78,7 +80,7 @@ before the held-out set was scored.
 | Test ROC-AUC (95% bootstrap CI) | 0.818 (0.791 to 0.843) |
 | Test PR-AUC (base rate) | 0.838 (0.566) |
 | Alert threshold | 0.07, chosen on out-of-fold predictions with assumed costs |
-| Top 10% targeting | precision 0.925 (95% bootstrap CI 0.858 to 0.962), lift 1.634x, reaches 16.4% of non-returners |
+| Top 10% targeting | precision 0.925 (95% bootstrap CI 0.858 to 0.962), lift 1.634x (maximum possible about 1.77 with a 56.6% base rate), reaches 16.4% of non-returners |
 
 Nested cross-validation (honest estimate after tuning):
 
@@ -90,8 +92,8 @@ Nested cross-validation (honest estimate after tuning):
 | XGBoost | 0.803 |
 
 **Key findings** (forward-looking ML label unless stated)
-- Descriptive EDA label (whole-period, Recency-based): customers with one order churn at 77.5%, against 29.4% for customers with 4 or more orders.
-- Descriptive EDA label: VIP customers churn at 13.6%, against 55.3% for Regular customers.
+- Descriptive EDA label (whole-period, Recency-based): customers with one order churn at 77.5%, against 29.4% for customers with 4 or more orders; label derived from Recency, partly circular, not evidence of predictive power.
+- Descriptive EDA label: VIP customers churn at 13.6%, against 55.3% for Regular customers; label derived from Recency, partly circular, not evidence of predictive power.
 - The top SHAP feature group is Frequency / volume (importance 0.474), followed by Recency / timing (0.342), Monetary / value (0.228) and Basket / product (0.181). Tenure (0.014) and Geography (0.002) add almost nothing.
 - Nested CV scores for Logistic Regression (0.796), Random Forest (0.802) and XGBoost (0.803) sit within one standard deviation (about 0.014 to 0.016) of each other, so the model choice is not statistically decisive.
 - At the chosen threshold of 0.07 the model has recall 0.998 and precision 0.586 against a base rate of 0.566: it flags almost every customer, so the ranking (AUC 0.818) is the useful output, not the alert flag alone.
@@ -101,11 +103,11 @@ Nested cross-validation (honest estimate after tuning):
 flowchart TD
     A[("Raw transactions<br/>Online Retail II")] --> B["Clean + data contracts<br/>src/cleaning, src/pipeline/checks"]
     B --> C["Features before the cutoff<br/>label = no order in the next 90 days"]
-    C --> D["Train / sealed holdout"]
+    C -->     D["Train / held-out split"]
     D --> E["CV + tuning<br/>LogReg, Tree, Random Forest, XGBoost"]
     E --> F[["MLflow tracking<br/>CV metrics only"]]
     E --> G(["Pre-registered model choice<br/>committed before the test"])
-    G --> H["One-time holdout evaluation<br/>bootstrap CIs, threshold from OOF"]
+    G --> H["Final held-out report<br/>bootstrap CIs, threshold from OOF"]
     H --> I[("app_artifacts<br/>model + manifest sha256 + customer table")]
     I --> J["Streamlit app<br/>Community Cloud"]
     C -.-> K["Drift monitoring<br/>PSI / KS / Evidently"]
@@ -129,13 +131,13 @@ Live at https://ecommerce-churn-project.streamlit.app/
 | Risk | Guard | Where |
 |---|---|---|
 | Label leakage | Features before the cutoff only; changing future rows must not change any feature | `tests/test_build_features.py` |
-| Peeking at the test set | Model choice committed before the test; tracking accepts CV metrics only | `reports/final_model_choice_day84.md`, `tests/test_tracking.py` |
+| Peeking at the test set | Model choice based on CV; tracking accepts CV metrics only | `reports/final_model_choice_day84.md`, `tests/test_tracking.py` |
 | Train/serve skew | App scores reproduce the reported test AUC; what-if formulas match training formulas | `tests/test_lookup.py`, `tests/test_whatif.py` |
 | Wrong or tampered model | sha256 check and library-version manifest before loading | `tests/test_serialization.py`, `tests/test_deploy_ready.py` |
-| Silent bad data | Data contracts, a freshness guard on `as_of`, a sealed holdout in the pipeline | `tests/test_checks.py`, `tests/test_run_pipeline.py` |
+| Silent bad data | Data contracts, a freshness guard on `as_of`, held-out split safeguards in the pipeline | `tests/test_checks.py`, `tests/test_run_pipeline.py` |
 | Drift | PSI with an A/A calibration and an alert policy | `tests/test_drift.py` |
 
-100 automated tests, 70+ commits, all analysis reproducible from the notebooks and `src/`.
+101 automated tests collected, 70+ commits, all analysis reproducible from the notebooks and `src/`.
 
 ## Repository Structure
 ```
@@ -164,7 +166,7 @@ streamlit run src/app/app.py    # reads the committed app_artifacts, no raw data
 ```
 
 Notebooks assume the repository root as the working directory (VS Code: set `jupyter.notebookFileRoot` to `${workspaceFolder}`).
-Notebooks `84` to `86` record the original tuning and the one-time held-out evaluation and are kept as run: re-running them re-scores the held-out set.
+Notebooks `84` to `86` record the original tuning and final held-out evaluation and are kept as run: re-running them would score the held-out set again.
 The Evidently drift report needs its own environment, see the header of `scripts/evidently_report.py`.
 
 To rebuild everything from raw data, download the dataset [data/README.md](data/README.md), then run the notebooks in order or the pipeline:
@@ -173,7 +175,10 @@ To rebuild everything from raw data, download the dataset [data/README.md](data/
 ## Limitations
 - One UK online retailer, 2009 to 2011, so patterns may not transfer to other businesses.
 - The 90-day churn window is a business assumption, and the cost figures behind the alert threshold are assumptions.
-- The assumed costs (a missed churner costs far more than a wasted contact) push the threshold to flag almost every customer, so the alert flag is not selective; use the ranking and the top-k list instead.
+- The model-card alert threshold flags almost every customer, so use the ranking and the top list instead; see [docs/known_issues.md](docs/known_issues.md).
+- Retention impact is not measured because there is no control group.
+- Evaluation uses one cutoff snapshot with a random customer split; there is no out-of-time test.
+- XGBoost is not significantly better than Logistic Regression.
 - The held-out set has 598 non-returners (1,057 customers), so every metric still has an uncertainty band, and differences inside the intervals are not real differences.
 - Scores are for ranking: class weighting inflates them, so they are not calibrated probabilities.
 - SHAP explains what the model uses, not what causes churn. The what-if sliders are sensitivity checks.

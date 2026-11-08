@@ -115,16 +115,3 @@ class DAG:
             else:
                 out[name] = 'cached' if self._is_fresh(t, self._fingerprint(t)) else 'would_run'
         return out
-
-def plan(self, force: bool = False) -> dict[str, str]:
-    """Dry run: kya chalega? Upstream chalega to downstream 'maybe'"""
-    out = {}
-    for name in self.order():
-        t = self.tasks[name]
-        if force:
-            out[name] = 'would_run'
-        elif any(out[d] != 'cached' for d in t.deps):
-            out[name] = 'maybe'
-        else:
-            out[name] = 'cached' if self._is_fresh(t, self._fingerprint(t)) else 'would_run'
-    return out    
