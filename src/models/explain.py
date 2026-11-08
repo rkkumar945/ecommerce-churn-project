@@ -23,7 +23,8 @@ def _shap_for_estimator(est, Xt, bg_t):
     if hasattr(est, "coef_"):  # linear model
         ex = shap.LinearExplainer(est, bg_t)
         values = _positive_class(ex.shap_values(Xt))
-        output, space = est.decision_function(Xt), "log-odds"
+        X_in = Xt if hasattr(est, 'feature_names_in_') else Xt.to_numpy()
+        output, space = est.decision_function(X_in), 'log-odds'
     else:  # tree-based
         ex = shap.TreeExplainer(est)
         values = _positive_class(ex.shap_values(Xt))

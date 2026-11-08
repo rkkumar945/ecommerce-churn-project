@@ -21,7 +21,7 @@ FORBIDDEN = [
     (r'__pycache__/|\.ipynb_checkpoints/|\.(pytest|ruff)_cache/', 'cache'),
     (r'(^|/)\.venv', 'virtualenv'),
 ]
-LOCAL_PATH = re.compile(r'[A-Za-z]:\\Users\\|/Users/[^/\s]+|/home/[a-z]')
+LOCAL_PATH = re.compile(r'[A-Za-z]:\\Users\\(?!<user>)|/Users/(?!<user>)[^/\s]+|/home/(?!<user>)[a-z]')
 SECRET = re.compile(r'(api[_-]?key|secret|passw(or)?d|token)\s*[:=]\s*[\'"][^\'"\s]{8,}', re.IGNORECASE)
 
 
@@ -118,13 +118,19 @@ def run_audit():
         for d in sorted(p.name for p in nb_root.iterdir() if p.is_dir() and not p.name.startswith('.')):
             if d not in EXPECTED_NB_DIRS:
                 add('WARN', 'structure', f'notebooks/{d}: unexpected folder')
-    for d in walk_dirs():
-        if d.name.lower() in {'model', 'models'} and d != ROOT / 'models':
-            n_files = sum(1 for x in d.iterdir() if x.is_file())
-            if n_files:
-                add('WARN', 'structure', f'{d.relative_to(ROOT)}: nested model folder ({n_files} files)')
+        for d in walk_dirs():
+          rel = d.relative_to(ROOT).as_posix()
+          if d == ROOT / 'models' or rel.startswith(('src/', 'tests/')):
+            continue                                   # root models/ aur Python packages (src/models) theek hain
+          blobs = [x.name for x in d.iterdir() if x.is_file() and x.suffix.lower() in {'.joblib', '.pkl', '.pickle'}]
+          if blobs:
+            add('WARN', 'structure', f'{rel}: model files ({len(blobs)}) root models/ ke bahar')
 
-    # 4) notebooks
+     # 4) notebooks: README/docs se linked = showcase (strict), baaki = learning record
+    linked = set()
+    for md in (x for x in files if x.endswith('.md')):
+        linked.update(Path(t).name for t in re.findall(r'\(([^)\s]+\.ipynb)\)', read(md)))
+    learning_issues = []
     for f in (x for x in files if x.endswith('.ipynb')):
         try:
             nb = json.loads(read(f))
@@ -133,10 +139,16 @@ def run_audit():
             continue
         cells = nb.get('cells', [])
         counts = [c['execution_count'] for c in cells if c.get('cell_type') == 'code' and c.get('execution_count')]
+        issue = None
         if counts and (counts != sorted(counts) or len(set(counts)) != len(counts)):
-            add('WARN', 'notebook', f'{f}: execution order bikhra (stale outputs ho sakte hain)')
+            issue = 'execution order bikhra (stale outputs ho sakte hain)'
         elif counts and counts[0] != 1:
-            add('WARN', 'notebook', f'{f}: Restart + Run All nahi hua (counter {counts[0]} se shuru)')
+            issue = f'Restart + Run All nahi hua (counter {counts[0]} se shuru)'
+        if issue:
+            if Path(f).name in linked:
+                add('WARN', 'notebook', f'SHOWCASE {f}: {issue}')
+            else:
+                learning_issues.append(f)
         n_err = sum(1 for c in cells for o in c.get('outputs', []) if o.get('output_type') == 'error')
         if n_err:
             add('WARN', 'notebook', f'{f}: {n_err} error output saved')
@@ -152,6 +164,8 @@ def run_audit():
         text = read(f)
         if not re.search(r'src\.paths|os\.chdir|find_root|\.\./\.\./', text) and re.search(r"['\"](data|models|reports)/", text):
             add('INFO', 'paths', f'{f}: repo-root relative paths, working directory par depend karta hai')
+    if learning_issues:
+        add('INFO', 'notebook', f'{len(learning_issues)} learning notebooks: original run ke outputs (Restart + Run All nahi hua)')
 
     # 5) duplicate split logic
     for f in files:

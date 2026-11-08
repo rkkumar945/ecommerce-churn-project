@@ -1,0 +1,13 @@
+# Final review (Day 98)
+
+## Must-fix (ajnabi ya interviewer pakad lega)
+- [ ] ...
+
+## Should-fix (professional lagta hai)
+- [ ] ...
+
+## Documented limitation (aaj nahi hoga, README Limitations/Roadmap mein)
+- ...
+
+## Sawaal jin par atka (Part 5)
+1. ...

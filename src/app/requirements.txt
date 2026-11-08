@@ -1,5 +1,5 @@
 # Core data stack
-pandas==3.1.0
+pandas==3.1.1
 numpy==2.5.4
 scipy==1.18.1
 

@@ -14,9 +14,12 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 import pandas as pd
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split
+
+from src.features.split import make_split
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -70,9 +73,8 @@ def main():
     X = make_xy(feat, NUM_V2).astype(float)
     assert list(X.columns) == card["features"], "feature order model card se alag hai"
 
-    _idx_tr, idx_te = train_test_split(
-        feat.index, test_size=0.2, random_state=42, stratify=feat["Churned"]
-    )
+    _idx_tr, idx_te = make_split(feat)
+    
     X_te_saved = pd.read_csv(ROOT / "data" / "processed" / "X_test_v2.csv").astype(
         float
     )

@@ -162,7 +162,12 @@ pip install -r requirements.txt
 pytest -q
 streamlit run src/app/app.py    # reads the committed app_artifacts, no raw data needed
 ```
-To rebuild everything from raw data, download the dataset (see `data/README.md`), then run the notebooks in order or the pipeline:
+
+Notebooks assume the repository root as the working directory (VS Code: set `jupyter.notebookFileRoot` to `${workspaceFolder}`).
+Notebooks `84` to `86` record the original tuning and the one-time held-out evaluation and are kept as run: re-running them re-scores the held-out set.
+The Evidently drift report needs its own environment, see the header of `scripts/evidently_report.py`.
+
+To rebuild everything from raw data, download the dataset [data/README.md](data/README.md), then run the notebooks in order or the pipeline:
 `python -m src.pipeline.run_pipeline` (dry-run) and `python -m src.pipeline.run_pipeline --execute`.
 
 ## Limitations
