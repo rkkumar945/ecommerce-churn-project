@@ -119,3 +119,9 @@ def test_required_sections_exist():
     heads = {m.group(1).strip().lower() for m in re.finditer(r'^##\s+(.+?)\s*$', _prose(), flags=re.MULTILINE)}
     for needed in ('limitations', 'how to run', 'results', 'roadmap', 'system architecture'):
         assert any(needed in h for h in heads), f'section missing: {needed}'
+
+
+
+def test_dataset_attribution_present():
+    text = _text()
+    assert 'CC BY 4.0' in text and '10.24432/C5CG6D' in text        
