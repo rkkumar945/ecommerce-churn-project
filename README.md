@@ -45,6 +45,8 @@ The useful output is therefore a **ranking**: who is most likely to stop buying,
 The modelling table contains 5,283 customers: 61 customers whose records contain only cancellations are removed, and 598 more are dropped because they have no purchase before the cutoff date.
 The raw data is not stored in this repo, see [data/README.md](data/README.md).
 
+**Dataset attribution:** Online Retail II, UCI Machine Learning Repository, https://doi.org/10.24432/C5CG6D. Licensed under **CC BY 4.0**.
+
 ## Approach
 | Stage | What was done | Where |
 |---|---|---|
@@ -193,6 +195,11 @@ To rebuild everything from raw data, download the dataset [data/README.md](data/
 - [x] Streamlit app deployed
 - [ ] AI agent and API wrapper around the model (planned)
 - [ ] Docker and cloud container deployment (planned)
+
+## License
+This project is licensed under the [MIT License](LICENSE).
+
+The dataset used in the project is the Online Retail II dataset from the UCI Machine Learning Repository, which is provided under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
 
 ## Author
 **Rajat Kumar** · [LinkedIn](https://linkedin.com/in/rajat-kumar-161144385) · [GitHub](https://github.com/rkkumar945)

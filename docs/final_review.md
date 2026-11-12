@@ -1,43 +1,33 @@
 # Final project review (Day 100)
 
-## Master test result
-Total <<FILL>>/100 (A <<FILL>>, B <<FILL>>, C <<FILL>>, D <<FILL>>, E <<FILL>>, F <<FILL>>). Questions I peeked on: <<FILL>>.
-Details: `reports/master_test_day100.md`
+## Outcome
+The project delivers an end-to-end customer churn ranking workflow, from transaction cleaning and a leakage-aware target through model evaluation, monitoring, and a live app. The held-out test ROC-AUC is 0.818 (95% bootstrap CI 0.791 to 0.843). The ranking is more useful than the alert flag alone: at the selected 0.07 threshold the model flags nearly every customer.
 
-## Scorecard (0 to 5)
-| Dimension | Score | Evidence | Weakness I still see |
-|---|---|---|---|
-| Data cleaning and contracts | <<FILL>> | `src/cleaning/clean_data.py`, `src/pipeline/checks.py` | <<FILL>> |
-| SQL | <<FILL>> | `notebooks/month1_sql/18_month1_sql_summary.ipynb` | <<FILL>> |
-| Statistics and EDA | <<FILL>> | `notebooks/month3_statistics_eda/63_eda_report_final.ipynb` | <<FILL>> |
-| Modelling correctness (leakage, CV) | <<FILL>> | `tests/test_build_features.py`, `src/features/split.py` | <<FILL>> |
-| Evaluation honesty | <<FILL>> | `reports/model_comparison_report.md`, `reports/final_model_choice_day84.md` | <<FILL>> |
-| MLOps (tracking, pipeline, monitoring) | <<FILL>> | `src/tracking/mlflow_utils.py`, `src/pipeline/run_pipeline.py`, `src/monitoring/drift.py` | <<FILL>> |
-| Deployment and app | <<FILL>> | `docs/deployment.md`, `reports/live_check_day96.md` | <<FILL>> |
-| Documentation | <<FILL>> | `README.md`, `docs/retraining_design.md` | <<FILL>> |
-| Communication | <<FILL>> | `docs/interview_prep.md` | <<FILL>> |
+Primary evaluation: `reports/model_comparison_report.md` and `reports/final_model_card.json`.
 
-## Skills, Day 1 to Day 100
-Level: 0 = never used, 1 = used with docs open, 2 = built it independently, 3 = could teach it.
-| Skill | Day 1 | Day 100 |
+## Scorecard
+| Dimension | Assessment | Evidence |
 |---|---|---|
-| SQL (joins, windows, CTEs) | <<FILL>> | <<FILL>> |
-| pandas and NumPy | <<FILL>> | <<FILL>> |
-| Statistics (tests, effect sizes) | <<FILL>> | <<FILL>> |
-| scikit-learn, XGBoost, evaluation | <<FILL>> | <<FILL>> |
-| SHAP | <<FILL>> | <<FILL>> |
-| MLflow, pipelines, drift monitoring | <<FILL>> | <<FILL>> |
-| Streamlit and deployment | <<FILL>> | <<FILL>> |
-| Git and testing | <<FILL>> | <<FILL>> |
-| Docker, FastAPI, LLMs (not started) | <<FILL>> | <<FILL>> |
+| Data quality and contracts | Cleaning removes guest checkouts, cancellations, and duplicates; pipeline checks protect inputs. | `src/cleaning/clean_data.py`, `src/pipeline/checks.py` |
+| SQL and exploration | SQL analysis and EDA are documented in the project notebooks. | `notebooks/month1_sql/18_month1_sql_summary.ipynb`, `notebooks/month3_statistics_eda/63_eda_report_final.ipynb` |
+| Modelling correctness | Features precede the cutoff, and the forward-looking target is tested for leakage. | `src/features/split.py`, `tests/test_build_features.py` |
+| Evaluation | Model selection uses cross-validation; the held-out results include uncertainty and budget-oriented ranking metrics. | `reports/model_comparison_report.md`, `reports/final_model_choice_day84.md` |
+| MLOps | The repository includes a retraining pipeline, MLflow tracking, and drift monitoring. | `src/pipeline/run_pipeline.py`, `src/tracking/mlflow_utils.py`, `src/monitoring/drift.py` |
+| Deployment and communication | A live app is supported by deployment guidance and a documented live check. | `docs/deployment.md`, `reports/live_check_day96.md` |
 
-## Retrospective
-- Three mistakes and what each taught me: <<FILL>>
-- Three decisions I would repeat: <<FILL>>
-- Three things I would change: <<FILL>>
+## Strengths
+- The target predicts no order in the 90 days after the cutoff, using only pre-cutoff transaction features.
+- The final model choice is recorded separately from held-out evaluation.
+- The README distinguishes descriptive EDA results from forward-looking model results and explains the operating-point limitation.
+- Reproducibility and operational topics have dedicated design documentation.
 
-## Resume bullets (every number must come from `scripts/readme_facts.py`)
-- Built an end-to-end customer churn system on 1.07M retail transactions (SQL, pandas, XGBoost, Streamlit), deployed as a live app with SHAP explanations.
-- Designed a leakage-free target (features before a cutoff, label = no order in the next 90 days) and enforced it with invariance unit tests; test ROC-AUC <<FILL>> (95% CI <<FILL>>).
-- Compared four model families with nested cross-validation and recorded the model choice in a commit before scoring the held-out set; reported bootstrap intervals and precision@k tied to a retention budget.
-- Added MLflow tracking, a cached retraining pipeline with data contracts, PSI drift monitoring and hash-checked model artifacts, covered by <<FILL>> automated tests.
+## Limitations and next steps
+- The available history is from one UK-based retailer over a limited period; performance should not be assumed to transfer to another retailer or later market conditions.
+- The test set is small relative to the transaction history because the modelling unit is a customer. Keep uncertainty intervals alongside point estimates.
+- The 0.07 alert threshold has very high recall but low selectivity. Treat the output primarily as a ranking and choose a contact budget with stakeholders before using alerts operationally.
+- Validate the data feed, drift thresholds, and retraining process on future data before relying on automated decisions.
+
+## Resume summary
+- Built a customer churn ranking pipeline using SQL, pandas, and gradient-boosted trees, with a forward-looking 90-day target and leakage checks.
+- Compared model families using cross-validation and reported held-out ROC-AUC with bootstrap confidence intervals.
+- Added experiment tracking, a retraining pipeline, drift monitoring, and a Streamlit app with customer-level explanations.
