@@ -1,1 +1,2 @@
 *.joblib binary
+reports/evidently_drift.html linguist-generated=true
