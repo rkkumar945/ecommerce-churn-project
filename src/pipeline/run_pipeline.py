@@ -38,6 +38,18 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / 'app_artifacts' / 'model_manifest.json'
 
 
+def positive_int(value: str) -> int:
+    try:
+        result = int(value)
+    except (TypeError, ValueError) as exc:
+        raise argparse.ArgumentTypeError(
+            "horizon-days must be a positive integer"
+        ) from exc
+    if result <= 0:
+        raise argparse.ArgumentTypeError("horizon-days must be a positive integer")
+    return result
+
+
 @dataclass(frozen=True)
 class Config:
     raw_csv: Path
@@ -173,7 +185,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description='Churn retraining pipeline (dry-run by default)')
     ap.add_argument('--raw', default=str(ROOT / 'data' / 'raw' / 'online_retail_II.csv'))
     ap.add_argument('--as-of', default=None, help='YYYY-MM-DD ya timestamp (default: data ki aakhri date)')
-    ap.add_argument('--horizon-days', type=int, default=90)
+    ap.add_argument('--horizon-days', type=positive_int, default=90)
     ap.add_argument('--execute', action='store_true', help='asli run (default: dry-run)')
     ap.add_argument('--force', action='store_true', help='cache ignore karo')
     ap.add_argument('--track', action='store_true', help='CV metrics MLflow mein bhi log karo')

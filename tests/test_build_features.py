@@ -113,6 +113,19 @@ def test_horizon_days_changes_cutoff():
     assert out.loc[3, "Churned"] == 1  # aur future mein nahi aaya
 
 
+@pytest.mark.parametrize("horizon_days", [0, -1, 1.5, float("nan"), True])
+def test_horizon_days_must_be_a_positive_integer(horizon_days):
+    with pytest.raises(ValueError, match="horizon_days must be a positive integer"):
+        build_customer_dataset(make_tx(), horizon_days=horizon_days)
+
+
+def test_default_horizon_days_is_90():
+    pd.testing.assert_frame_equal(
+        build_customer_dataset(make_tx()),
+        build_customer_dataset(make_tx(), horizon_days=90),
+    )
+
+
 def test_region_bucketing():
     assert region_bucket("United Kingdom") == "UK"
     assert region_bucket("Germany") == "Rest of Europe"

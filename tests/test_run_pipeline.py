@@ -9,13 +9,31 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.pipeline.run_pipeline import MANIFEST, Config, build_dag, run_dir_for
+from src.pipeline.run_pipeline import (
+    MANIFEST,
+    Config,
+    build_dag,
+    main,
+    positive_int,
+    run_dir_for,
+)
 
 pytestmark = pytest.mark.skipif(not MANIFEST.exists(), reason='champion recipe (app_artifacts manifest) chahiye')
 
 
 def quiet(*_):
     pass
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "1.5", "nan"])
+def test_pipeline_cli_rejects_invalid_horizon(value):
+    with pytest.raises(SystemExit) as exc:
+        main(["--horizon-days", value])
+    assert exc.value.code == 2
+
+
+def test_pipeline_cli_horizon_type_accepts_default_value():
+    assert positive_int("90") == 90
 
 
 def make_raw(path, n_customers=600, seed=0):

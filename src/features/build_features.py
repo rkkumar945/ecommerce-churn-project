@@ -74,6 +74,12 @@ def build_customer_dataset(
     tx: pd.DataFrame, horizon_days: int = 90, as_of=None, exclude_non_product: bool = False
 ) -> pd.DataFrame:
     """Features sirf cutoff se pehle ke transactions se; label cutoff ke baad ke window se."""
+    if (
+        isinstance(horizon_days, (bool, np.bool_))
+        or not isinstance(horizon_days, (int, np.integer))
+        or horizon_days <= 0
+    ):
+        raise ValueError("horizon_days must be a positive integer")
     tx = tx.copy()
 
     # Agar exclude_non_product True hai, toh 'POST' waale rows filter karein
