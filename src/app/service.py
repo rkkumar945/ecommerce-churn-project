@@ -11,6 +11,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from src.models.topk import top_k_count
+
 ROOT = Path(__file__).resolve().parents[2]
 ART = ROOT / "app_artifacts"
 MANIFEST_PATH = ART / "model_manifest.json"
@@ -248,7 +250,7 @@ def wilson_interval(successes: float, n: int, z: float = 1.96):
 def top_k_summary(pool: pd.DataFrame, frac: float) -> dict:
     """Pool ko score se rank karke top frac ka haal: precision, lift, churners ka kitna hissa reach hua."""
     n = len(pool)
-    k = max(1, round(n * frac))
+    k = top_k_count(n, frac)
     top = pool.sort_values("score", ascending=False).head(k)
     base_rate = float(pool["observed_churn"].mean())
     precision = float(top["observed_churn"].mean())

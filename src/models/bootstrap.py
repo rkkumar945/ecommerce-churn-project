@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from src.models.topk import top_k_count
+
 
 def bootstrap_metric(
     y, scores: dict, metric, n_boot: int = 2000, seed: int = 42
@@ -26,11 +28,11 @@ def ci(arr, level: float = 0.95):
 
 
 def precision_at_frac(y, s, frac: float) -> float:
-    k = max(1, int(len(y) * frac))
+    k = top_k_count(len(y), frac)
     return float(np.asarray(y)[np.argsort(-np.asarray(s))[:k]].mean())
 
 
 def recall_at_frac(y, s, frac: float) -> float:
-    k = max(1, int(len(y) * frac))
+    k = top_k_count(len(y), frac)
     y = np.asarray(y)
     return float(y[np.argsort(-np.asarray(s))[:k]].sum() / max(1, y.sum()))

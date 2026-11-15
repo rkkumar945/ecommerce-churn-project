@@ -10,6 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.app import service
+from src.models.topk import top_k_count
 
 
 def main() -> None:
@@ -26,7 +27,7 @@ def main() -> None:
     base_rate = float(labels.mean())
 
     for fraction in (0.10, 0.20):
-        k = round(fraction * len(scored))
+        k = top_k_count(len(scored), fraction)
         top_labels = labels[:k]
         precision = float(top_labels.mean())
         lift = precision / base_rate
