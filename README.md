@@ -182,7 +182,7 @@ To rebuild everything from raw data, download the dataset [data/README.md](data/
 - Evaluation uses one cutoff snapshot with a random customer split; there is no out-of-time test.
 - XGBoost is not significantly better than Logistic Regression.
 - The held-out set has 598 non-returners (1,057 customers), so every metric still has an uncertainty band, and differences inside the intervals are not real differences.
-- Scores are for ranking: class weighting inflates them, so they are not calibrated probabilities.
+- Class-weighted scores are meant for ranking; they are not calibrated probabilities. No calibration has been assessed.
 - SHAP explains what the model uses, not what causes churn. The what-if sliders are sensitivity checks.
 - No live outcomes: drift monitoring is simulated with historical snapshots, and real performance would arrive 90 days late.
 - Free hosting: the app sleeps when idle and has no uptime guarantee.

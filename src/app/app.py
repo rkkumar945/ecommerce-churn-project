@@ -484,8 +484,8 @@ predicts the future instead of re-learning its own label.
 Test ROC-AUC: **{manifest["test_auc"]:.3f}** on {len(te):,} held-out customers
 ({int(te["observed_churn"].sum()):,} of them did not reorder).
 
-**How to read the score.** It is a *ranking* score, not a calibrated probability. Class weighting inflates raw values,
-so a score of 0.7 does **not** mean a 70% chance. Use rank and the contact budget instead. The legacy threshold
+**How to read the score.** Class-weighted scores are meant for ranking; they are not calibrated probabilities. No
+calibration has been assessed. A score of 0.7 does **not** mean a 70% chance. Use rank and the contact budget instead. The legacy threshold
 ({THRESHOLD:.2f}) flags about 96% of held-out customers; it is shown for reference only and does not select the
 contact list. It was picked on out-of-fold predictions using assumed costs (missing a churner is costly, a wasted
 offer is cheap).

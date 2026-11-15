@@ -25,5 +25,5 @@ Confusion matrix: TN=37, FP=422, FN=1, TP=597
 
 ## Caveats
 - Test set has few churners, so intervals are wide. Differences inside the intervals are not real differences.
-- Probabilities are inflated by class weighting; the model is meant for ranking, not for calibrated risk percentages.
+- Class-weighted scores are meant for ranking; they are not calibrated probabilities. No calibration has been assessed.
 - Costs are assumptions, not measured business numbers.
