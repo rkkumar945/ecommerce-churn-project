@@ -16,7 +16,7 @@ Skeleton: "I built an end-to-end churn system on about 1.07 million retail trans
 | Test ROC-AUC (95% CI) | 0.818 (0.791 to 0.843) | `reports/model_comparison_report.md` |
 | Top-10% precision and lift | 0.925 (95% CI 0.858 to 0.962); lift 1.634x | `README.md` |
 | Nested CV AUC of the four families | Logistic Regression 0.796; Decision Tree 0.778; Random Forest 0.802; XGBoost 0.803 | `reports/nested_cv_day84.csv` |
-| Automated tests | 135 tests collected at the time of writing (2026-11-15) | `scripts/readme_facts.py` |
+| Automated tests | 142 tests collected at the time of writing (2026-11-15) | `scripts/readme_facts.py` |
 | Live app | https://ecommerce-churn-project.streamlit.app/ | `docs/deployment.md` |
 
 ## 2. System design: churn prediction for 10 million customers
