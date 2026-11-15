@@ -95,7 +95,7 @@ Level 0 is manual. Level 1 is an automated training pipeline with data validatio
 - Evidence: `reports/model_comparison_report.md`
 
 **Q: How did you choose the threshold?**
-- Out-of-fold predictions and assumed costs, never the test set; the test set was scored once.
+- Threshold selected from out-of-fold predictions, not the test set. The final pre-registered model's held-out evaluation was done once; Month 4 notebooks also looked at the test split, and this is disclosed.
 - Scores are class-weighted, so they are for ranking, not calibrated probabilities.
 - Evidence: `reports/model_comparison_report.md`
 

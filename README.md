@@ -33,7 +33,7 @@
 
 The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On the held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). Contacting the 10% highest-scored held-out customers finds non-returners with 92.5% precision (lift 1.634x; with a 56.6% base rate the maximum possible lift is about 1.77) and reaches 16.4% of all non-returners.
 
-The final model was chosen on cross-validation only, and the held-out set was scored once for the final report. Earlier Month 4 notebooks also reported test scores for baseline models; see [reports/test_comparison_day70.csv](reports/test_comparison_day70.csv).
+The final pre-registered model's held-out evaluation was done once for the final report. Earlier Month 4 notebooks also looked at the test split and reported baseline-model scores; this is disclosed in [reports/test_comparison_day70.csv](reports/test_comparison_day70.csv).
 
 ## Business Problem
 Winning a new customer usually costs more than keeping an existing one, and a retention team can only contact so many people.
