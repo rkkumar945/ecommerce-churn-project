@@ -152,12 +152,60 @@ def predict_row(model, row, features, threshold, reference_scores=None) -> dict:
 def whatif_problems(row, changes: dict) -> list[str]:
     """Impossible combinations ki list (khaali list = scenario possible hai).
     Windows cutoff se peeche naapi jaati hain; 90/180 din ki seema par 1-2 din ka margin rakha hai."""
-    r = {k: float(changes.get(k, row[k])) for k in WHATIF}
     msgs = []
+    numeric = {}
+    for key, value in changes.items():
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            msgs.append(f"{key} must be numeric.")
+            continue
+        if not np.isfinite(number):
+            msgs.append(f"{key} must be finite.")
+            continue
+        numeric[key] = number
+        if key not in WHATIF:
+            msgs.append(f"{key} cannot be changed in a what-if scenario.")
+
+    counts = ("Frequency", "Orders_last90", "Orders_prev90", "UniqueProducts")
+    for key in counts:
+        if key in numeric:
+            value = numeric[key]
+        else:
+            try:
+                value = float(row[key])
+            except (TypeError, ValueError, OverflowError):
+                msgs.append(f"{key} must be a numeric count.")
+                continue
+            if not np.isfinite(value):
+                msgs.append(f"{key} must be a finite count.")
+                continue
+        if value < 0 or not value.is_integer():
+            msgs.append(f"{key} must be a non-negative integer count.")
+
+    r = {}
+    for key in WHATIF:
+        if key in numeric:
+            r[key] = numeric[key]
+        else:
+            try:
+                value = float(row[key])
+            except (TypeError, ValueError, OverflowError):
+                msgs.append(f"{key} must be numeric.")
+                continue
+            if not np.isfinite(value):
+                msgs.append(f"{key} must be finite.")
+                continue
+            r[key] = value
+    if msgs:
+        return msgs
+
     if r["Recency"] > row["Tenure"]:
         msgs.append(
             f"Days since last order cannot exceed customer age ({row['Tenure']:.0f} days)."
         )
+    if int(row["SingleOrder"]) == 1 and r["Recency"] != float(row["Tenure"]):
+        msgs.append("For a single-order customer, recency must equal customer age.")
     if r["Orders_last90"] + r["Orders_prev90"] > row["Frequency"]:
         msgs.append(
             f"Orders in the two 90-day windows cannot exceed total orders ({row['Frequency']:.0f})."
@@ -183,6 +231,12 @@ def whatif_problems(row, changes: dict) -> list[str]:
 
 def apply_whatif(row, changes: dict):
     """Chuni hui values badlo, aur dependent features build_features.py ke formulas se dobara nikaalo."""
+    for key in changes:
+        if key not in WHATIF:
+            raise KeyError(f"{key} what-if ke liye allowed nahi hai")
+    problems = whatif_problems(row, changes)
+    if problems:
+        raise ValueError("Invalid what-if scenario: " + " ".join(problems))
     new = row.copy()
     for k, v in changes.items():
         if k not in WHATIF:

@@ -78,14 +78,42 @@ def test_impossible_scenarios_are_rejected(art):
     assert whatif_problems(row, {"Recency": row["Tenure"] + 1})
 
 
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"Orders_last90": -1},
+        {"Recency": np.nan},
+        {"Orders_prev90": 0.5},
+    ],
+)
+def test_invalid_whatif_values_are_rejected(art, changes):
+    _, _, table = art
+    row = table[table["Frequency"] > 1].iloc[0]
+
+    assert whatif_problems(row, changes)
+    with pytest.raises(ValueError, match="Invalid what-if scenario"):
+        apply_whatif(row, changes)
+
+
+def test_single_order_customer_must_keep_recency_equal_to_tenure(art):
+    _, _, table = art
+    row = table[table["Customer ID"] == 12350].iloc[0]
+
+    assert row["SingleOrder"] == 1
+    assert row["Recency"] == row["Tenure"] == 219
+    assert whatif_problems(row, {"Recency": 0})
+
+
 def test_dependents_follow_the_formulas(art):
     _, _, table = art
     row = table[table["Frequency"] > 1].iloc[0]
-    new = apply_whatif(row, {"Recency": 40.0, "Orders_last90": 0, "Orders_prev90": 2})
-    assert np.isclose(new["OverdueRatio"], 40.0 / max(row["AvgGapDays"], 1.0))
+    original_recency = row["Recency"]
+    new = apply_whatif(row, {"Recency": 100.0, "Orders_last90": 0, "Orders_prev90": 2})
+    assert np.isclose(new["OverdueRatio"], 100.0 / max(row["AvgGapDays"], 1.0))
     assert new["OrderTrend"] == -2
     assert new["Spend_last90_log"] == 0.0
-    assert row["Recency"] != 40.0 or True  # original row badli nahi
+    assert row["Recency"] == original_recency
+    assert new["Recency"] == 100.0
     with pytest.raises(KeyError):
         apply_whatif(row, {"Frequency": 9})
 
