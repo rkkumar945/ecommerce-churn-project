@@ -2,6 +2,7 @@
 Repo root se chalao:  python -m src.app.export_artifacts
 """
 
+import argparse
 import hashlib
 import importlib.metadata as md
 import json
@@ -64,7 +65,24 @@ def git_commit() -> str:
         return "unknown"
 
 
-def main():
+def resolve_model_path(model_path: Path | None = None, root: Path = ROOT) -> Path:
+    if model_path is not None:
+        candidates = [Path(model_path)]
+    else:
+        candidates = [
+            root / "models" / "final_model.joblib",
+            root / "notebooks" / "model" / "final_model.joblib",
+        ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    checked = ", ".join(str(path) for path in candidates)
+    raise FileNotFoundError(f"No model file found; checked: {checked}")
+
+
+def main(model_path: Path | None = None):
+    model_source = resolve_model_path(model_path)
+    print(f"Using model file: {model_source}")
     OUT.mkdir(exist_ok=True)
     card = json.loads((ROOT / "reports" / "final_model_card.json").read_text())
 
@@ -89,7 +107,7 @@ def main():
 
     # --- model: copy karo (dobara dump nahi), taaki file ka hash stable rahe ---
     path = OUT / "final_model.joblib"
-    shutil.copy2(ROOT / "models" / "final_model.joblib", path)
+    shutil.copy2(model_source, path)
 
     # --- reproducibility check: copy kiya hua model wahi test AUC deta hai? ---
     reloaded = joblib.load(path)
@@ -120,4 +138,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--model-path",
+        type=Path,
+        help="model file to export (default: models/, then notebooks/model/)",
+    )
+    main(parser.parse_args().model_path)
