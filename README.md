@@ -187,13 +187,15 @@ To rebuild everything from raw data, download the dataset [data/README.md](data/
 - Free hosting: the app sleeps when idle and has no uptime guarantee.
 
 ## Roadmap
+The original project roadmap is frozen at Day 100. The AI agent, FastAPI and Docker phases were not built; they remain future work only.
+
 - [x] SQL, Pandas, statistics and EDA
 - [x] Leakage-free ML with CV, imbalance handling and evaluation
 - [x] RFM, behavioral features, ensembles, tuning, SHAP
 - [x] MLflow tracking, retraining pipeline, drift monitoring
 - [x] Streamlit app deployed
-- [ ] AI agent and API wrapper around the model (planned)
-- [ ] Docker and cloud container deployment (planned)
+- [ ] AI agent and FastAPI API wrapper (not built; future work only)
+- [ ] Docker deployment (not built; future work only)
 
 ## License
 This project is licensed under the [MIT License](LICENSE).

@@ -31,6 +31,6 @@ Sources: reports/nested_cv_day84.csv; reports/final_model_card.json.
 Sources: reports/model_comparison_report.md; README.md, Results and Limitations.
 
 ## 7. Next
-"My next planned work is an AI agent and API wrapper around the model, followed by Docker and cloud container deployment."
+"The original project roadmap is frozen at Day 100. The AI agent, FastAPI and Docker phases were not built; they remain future work only."
 
 Sources: README.md, Roadmap.
