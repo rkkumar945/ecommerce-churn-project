@@ -14,3 +14,10 @@ The items below are intentionally unchanged to preserve notebook outputs.
 - `src/app/app.py:59,223-256,362-364,451-478` - The customer alert, top-list Flagged column, and what-if alert still use the model-card threshold; there is no sidebar priority-budget selector, and the threshold caveat and English-copy changes are absent. The requested UI changes were skipped because notebooks reference this file. not changed on purpose: it would alter notebook outputs.
 - `reports/final_model_choice_day84.md:7` - Resolved retrospectively on 2026-11-13: the missing reason was reconstructed from the Day 84 CV artifacts and added to the decision record. The original rationale was not recorded on Day 84.
 - `docs/pipeline_dag.md:1-30` - The stale mixed-language DAG notes remain because a notebook references this document. not changed on purpose: it would alter notebook outputs.
+
+## Cleaning and feature interpretation
+
+- `clean_transactions` defaults keep non-product codes and Price <= 0 rows for notebook reproducibility; these defaults are unchanged.
+- Cleaning removes cancellation invoices but does not reject a non-cancellation row solely for having a negative quantity, so such a row survives.
+- `build_customer_dataset(exclude_non_product=True)` filters only POST, while `clean_transactions` uses the longer `NON_PRODUCT_CODES` list.
+- Spend values represent purchase activity after cancellation rows are removed; they are not net revenue.
