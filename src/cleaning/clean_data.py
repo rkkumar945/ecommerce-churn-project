@@ -33,8 +33,8 @@ NON_PRODUCT_CODES = [
 
 def clean_transactions(
     df: pd.DataFrame,
-    exclude_non_product: bool = False,
-    drop_nonpositive_price: bool = False,
+    exclude_non_product: bool = False, #dataset me POST,ADJUST,BANK CHARGES etc. haise entries bhi hoti hai,inme paisa to add ho jata hai per te sale nahi hue.
+    drop_nonpositive_price: bool = False, #agar koi item ka price 0 ya negative hai to ye valus model ko confuse kar degi.
 ) -> pd.DataFrame:
     """Drop guest checkouts, fill Description, drop duplicates and cancellations, fix dtypes.
 

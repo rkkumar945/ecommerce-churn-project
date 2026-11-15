@@ -3,6 +3,8 @@
 import numpy as np
 import pandas as pd
 
+#Eupropean countries ki ek list banai, or 3 catagory me divide kiya.
+# kyuki countries bahut sari hai jis se agar hum direct sari countries ko uske naam se use karenge to ML model me bahut sare columns ban jayenge or model overfit ho sakta hai.
 EUROPE = [
     "Germany",
     "France",
@@ -26,6 +28,7 @@ EUROPE = [
 ]
 REGIONS = ["Rest of Europe", "Rest of World", "UK"]
 
+#RFM features or new behavioral features ke column names ki list banai. model trainig ke time pata rehta ki kon se columns numeric features hai jinko ML model me feed karna hai.
 NUM_V1 = [
     "Recency",
     "Frequency",
@@ -58,13 +61,15 @@ def region_bucket(country: str) -> str:
     return "Rest of Europe" if country in EUROPE else "Rest of World"
 
 
+# Region ko categorical data banata hai or numeric column me convert karta hai.
 def make_xy(df: pd.DataFrame, num_cols: list[str]) -> pd.DataFrame:
     """Numeric columns + one-hot Region (fixed categories, taaki columns hamesha same rahein)."""
     X = df[num_cols].copy()
     X["Region"] = pd.Categorical(df["Region"], categories=REGIONS)
-    return pd.get_dummies(X, columns=["Region"], drop_first=True)
+    return pd.get_dummies(X, columns=["Region"], drop_first=True) # agar hum REGIONS ko 0 or 1 me concert karte hai to agar pehle 2 columns 0 aa gye to automatically teesra 1 hoga. agar teen columns rakh le to information repeat hogi.
 
 
+# ye data leakage ko rokta hai.
 def build_customer_dataset(
     tx: pd.DataFrame, horizon_days: int = 90, as_of=None, exclude_non_product: bool = False
 ) -> pd.DataFrame:
@@ -80,7 +85,7 @@ def build_customer_dataset(
     data_max = tx['InvoiceDate'].max()
     end = pd.Timestamp(as_of) if as_of is not None else data_max
     if end > data_max + pd.Timedelta(days=1):
-        raise ValueError(f'as_of={as_of} data ki aakhri date ({data_max}) se aage hai: labels galat banenge')
+        raise ValueError(f'as_of={as_of} data ki aakhri date ({data_max}) se aage hai: labels galat banenge') # agar date data ke last date se aage ki hai to aise me code sabhi customers ko churned(1) mark kar dega.
     tx = tx[tx['InvoiceDate'] <= end]
     if tx.empty:
         raise ValueError(f'as_of={as_of} se pehle koi transaction nahi')
@@ -90,6 +95,7 @@ def build_customer_dataset(
     future = tx[tx["InvoiceDate"] >= cutoff]
 
     # ---- Day 62: base features (unchanged) ----
+    # past transactions ke hisab se group karta hai. ye RFM base numbers hai.
     f = (
         past.groupby("Customer ID")
         .agg(
@@ -108,11 +114,12 @@ def build_customer_dataset(
     f["AvgOrderValue"] = f["Monetary"] / f["Frequency"]
 
     # Negative Monetary values ko 0 clip karke log1p calculate karein
-    f["Monetary_log"] = np.log1p(f["Monetary"].clip(lower=0))
+    f["Monetary_log"] = np.log1p(f["Monetary"].clip(lower=0)) #ye log1p badi values ko chota bana deta hai taki model choti valus ko ignored na kare or prediction sabhi values ke according sahi de.
 
     f["Region"] = f["Country"].map(region_bucket)
 
     # ---- Day 82: behavioral features (sirf past) ----
+    # ye ye customer ke har invoice ke buch ka gap(din) likhti hai ki customer kitne din baad dobara shopping karne aaya. 
     inv = (
         past.groupby(["Customer ID", "Invoice"])
         .agg(
