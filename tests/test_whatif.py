@@ -45,6 +45,24 @@ def test_top_share_is_monotonic(art):
     )
 
 
+def test_top_share_boundaries_ties_and_invalid_inputs(art):
+    assert top_share_for([0.2, 0.4], 0.1) == 1.0
+    assert top_share_for([0.2, 0.4], 0.5) == 0.5
+    assert top_share_for([0.8, 0.7, 0.7, 0.5], 0.7) == 0.5
+    with pytest.raises(ValueError, match="must not be empty"):
+        top_share_for([], 0.5)
+    for score in (np.nan, np.inf, -np.inf):
+        with pytest.raises(ValueError, match="must be finite"):
+            top_share_for([0.2, 0.4], score)
+
+
+def test_top_share_matches_add_scores_for_existing_rows(art):
+    _, _, table = art
+
+    for _, row in table.sample(40, random_state=1).iterrows():
+        assert top_share_for(table["score"], row["score"]) == row["top_share"]
+
+
 def test_no_change_whatif_reproduces_derived_features(art):
     """Train/serve skew guard: app ke formulas = build_features.py ke formulas."""
     _, _, table = art

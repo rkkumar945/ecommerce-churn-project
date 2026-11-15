@@ -137,7 +137,12 @@ def row_to_frame(row, features: list[str]) -> pd.DataFrame:
 def top_share_for(reference_scores, score: float) -> float:
     """Sabse risky ka share (0.01 = top 1%). add_scores ke rank(method='min') jaisa hi formula."""
     s = np.asarray(reference_scores, dtype=float)
-    return float((1 + (s > score).sum()) / len(s))
+    if s.size == 0:
+        raise ValueError("reference_scores must not be empty")
+    if not np.isfinite(score):
+        raise ValueError("score must be finite")
+    share = (1 + (s > score).sum()) / len(s)
+    return float(np.clip(share, 0.0, 1.0))
 
 
 def predict_row(model, row, features, threshold, reference_scores=None) -> dict:
