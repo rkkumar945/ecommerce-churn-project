@@ -28,8 +28,8 @@ NON_PRODUCT_CODES = [
     "D",
     "TEST001",
     "TEST002",
-]
-
+] # ye un items ki list hai jo real products nahi hain, jaise ki postage, fees, adjustments, aur test items. Inhe data cleaning ke dauraan exclude kiya ja sakta hai.
+# jab hum sales analysis karte hai to in non-product entries ko hatana zaruri hai, taki humare results accurate ho taki revenue or quantites galat calculate na ho.
 
 def clean_transactions(
     df: pd.DataFrame,
@@ -43,20 +43,22 @@ def clean_transactions(
     Dono default False hain taaki purane notebook results (aur README ke numbers) reproduce hon.
     Input DataFrame change nahi hota.
     """
-    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns] #ye check karta hai ki data me sare jaruri columns hai ya nahi , agar nahi to error msg dega(kon sa column missing hai)., agar columns nahi hue to cleaning steps kaam nahi karenge or code crash hoga.
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
 
-    df = df.dropna(subset=["Customer ID"]).copy()
-    df["Description"] = df["Description"].fillna("Unknown Product")
-    df = df.drop_duplicates()
+          #
+    df = df.dropna(subset=["Customer ID"]).copy() #jin rows me customer ID nahi hai(NaN/null) unhe hata deta hai or new copy ban deta hai.
+    #Jab hum Pandas mein kisi DataFrame ka slice ya filter banate hain, toh Python kabhi-kabhi naye DataFrame ko original wale ka view (reference) hi maan leta hai. Aise mein agar hum koi naya column ya modification karein, toh Pandas ek SettingWithCopyWarning deta hai, .copy() lagane se Pandas ko saaf pata chal jata hai ki hum ek bilkul nayi, independent copy par kaam kar rahe hain taaki original data disturb na ho.
+    df["Description"] = df["Description"].fillna("Unknown Product")#jaha product ka discription missing(NaN) hai waha "Unknown Product" likh dega.
+    df = df.drop_duplicates() #duplicates rows ko hata deta hai, iski wajha se sales number double count ho jate hai.
     df = df[
-        ~df["Invoice"].astype(str).str.startswith("C")
+        ~df["Invoice"].astype(str).str.startswith("C") # (~) un invoices ko hata deti hai jinke starting me C aata hai, warna return orders bhi valid sales ki tarah count ho jainge jis se revenue galat ho jaiga.
     ].copy()  # cancellations/returns
     if exclude_non_product:
-        df = df[~df["StockCode"].astype(str).isin(NON_PRODUCT_CODES)].copy()
-    if drop_nonpositive_price:
-        df = df[df["Price"] > 0].copy()
-    df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
-    df["Customer ID"] = df["Customer ID"].astype(int)
+        df = df[~df["StockCode"].astype(str).isin(NON_PRODUCT_CODES)].copy() # 
+    if drop_nonpositive_price:      # 0 ya negative price wali rows ko hata deta hai, 
+        df = df[df["Price"] > 0].copy() 
+    df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"]) # InvoiceDate column ko string se pandas ke datetime format me convert karta hai. isi se hum month,time,dates per based filtering,sorting,time-based grouping kar sakte hai.
+    df["Customer ID"] = df["Customer ID"].astype(int) # covert CustomerID into integer format.
     return df
