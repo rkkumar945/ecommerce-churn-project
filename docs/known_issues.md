@@ -22,7 +22,7 @@ The notes below distinguish remaining caveats from resolved findings; statuses a
 
 ## Independent audit (2026-11-15)
 
-- **A1 alert threshold flags about 96% of customers — Status: Fixed.** The contact-budget slider selects the rounded top-k count; 10% of 1,057 is 106, matching `top_k_count(n, budget/100)`, rather than the 105 selected by a literal `top_share <= 10%` comparison. The 0.07 threshold remains for reference only.
+- **A1 alert threshold flags about 96% of customers — Status: Fixed.** The contact-budget slider selects the rounded top-k count; 10% of 1,057 is 106, matching `top_k_count(n, budget/100)`, rather than the 105 selected by a literal `top_share <= 10%` comparison. The 0.07 threshold remains for reference only; English lookup errors are checked in `tests/test_lookup.py`.
 - **A2 export path mismatch — Status: Fixed.** Export resolution checks `models/` and then `notebooks/model/`; `--model-path` and the promotion steps are documented in `docs/deployment.md`.
 - **A3 “1-SE” rule is actually 1-SD — Status: Fixed.** Renamed to `pick_one_sd`; the `pick_one_se` alias remains and selection logic is unchanged.
 - **Notebook 85 and source use different simplicity tie-breaks — Status: Documented.** Notebook 85 uses mean fit time, while `src/models/search_spaces.py` orders hyperparameters, so rerunning the notebook can select a different “simple” recipe.
@@ -32,11 +32,11 @@ The notes below distinguish remaining caveats from resolved findings; statuses a
 - **A7 wrong majority baseline in notebook 86 — Status: Fixed.** The formula and stored output changed from 0.434 to 0.566, with a correction cell; the notebook was not re-run.
 - **A8 inconsistent top-k rounding — Status: Fixed.** Bootstrap metrics, app summaries and targeting facts use shared `top_k_count`; older notebook bootstrap intervals used floor and can differ slightly from a fresh run.
 - **Scores are not calibrated probabilities — Status: Documented.** No calibration study has been done.
-- **Utility assumptions are not measured retention ROI — Status: Documented.** The held-out utility comparison uses assumed costs and benefits, not measured retention benefit or ROI.
-- **Cleaning defaults and filter inconsistency — Status: Documented.** Defaults preserve non-product and nonpositive-price rows; the cleaner and feature builder use different product-code filters.
+- **Utility assumptions are not measured retention ROI — Status: Documented.** The held-out utility comparison uses assumed costs and benefits, not measured retention benefit or ROI; evaluation formulas and split behavior are covered in `tests/test_evaluate.py`.
+- **Cleaning defaults and filter inconsistency — Status: Documented.** Defaults preserve non-product and nonpositive-price rows; the cleaner and feature builder use different product-code filters. Direct cleaning behavior is covered in `tests/test_clean_data.py`.
 - **Overlapping confidence intervals do not prove no difference — Status: Documented.** Differences are not decisive; a paired comparison would be needed.
 - **Earlier Month-4 notebooks looked at the test split — Status: Documented.** This disclosure is included in the README and interview notes.
-- **Part C follow-ups — Status: Pending (Part C).** Fill live-check placeholders, address Hinglish UI strings, and add unit tests for `clean_data` and `evaluate`.
+- **Part C follow-ups — Status: Fixed.** Live-check placeholders now say NOT VERIFIED where owner input is required; the ID scoring script is in `scripts/id_score.py`, app/service messages are in English, and direct `clean_data`/`evaluate` tests were added.
 - **No out-of-time validation — Status: Open.** Evaluation uses one cutoff and a random customer split; time-based validation remains future work.
 - **No probability calibration study — Status: Open.** Calibration remains future work if probability estimates are needed.
 - **No randomized control group or measured retention uplift — Status: Open.** A randomized campaign holdout is needed to measure incremental impact.
