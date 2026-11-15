@@ -1,14 +1,14 @@
 [theme]
 base = "light"
 
-primaryColor = "#4F46E5"
+primaryColor = "#28247c"
 
 
 backgroundColor = "#F8FAFC"
 
-secondaryBackgroundColor = "#1E293B"
+secondaryBackgroundColor = "#c5dd65"
 
-textColor = "#0F172A"
+textColor = "#b0213e"
 
 font = "sans serif"
 
