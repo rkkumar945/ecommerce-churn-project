@@ -12,7 +12,7 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold
 mlflow = pytest.importorskip("mlflow")
 
 
-from src.models.search_spaces import pick_one_se
+from src.models.search_spaces import pick_one_sd, pick_one_se
 from src.tracking import mlflow_utils as mu
 from src.tracking.experiments import log_grid_children, track_cv_run
 
@@ -100,7 +100,7 @@ class _FakeGS:
         self.best_index_ = best
 
 
-def test_pick_one_se_prefers_simpler_within_one_std():
+def test_pick_one_sd_prefers_simpler_within_one_std():
     params = [
         {"max_depth": 8, "min_samples_leaf": 5},
         {"max_depth": 3, "min_samples_leaf": 30},
@@ -108,16 +108,23 @@ def test_pick_one_se_prefers_simpler_within_one_std():
     ]
     gs = _FakeGS(params, [0.80, 0.79, 0.70], [0.02, 0.02, 0.02], best=0)
     assert (
-        pick_one_se(gs, "Tree") == params[1]
+        pick_one_sd(gs, "Tree") == params[1]
     )  # teesra 1 std se bahar hai, doosra simple aur andar
 
 
-def test_pick_one_se_is_deterministic():
+def test_pick_one_sd_is_deterministic():
     params = [
         {"n_estimators": 200, "max_depth": None, "min_samples_leaf": 3},
         {"n_estimators": 200, "max_depth": 8, "min_samples_leaf": 10},
     ]
     gs = _FakeGS(params, [0.80, 0.80], [0.01, 0.01], best=0)
     assert (
-        pick_one_se(gs, "RandomForest") == pick_one_se(gs, "RandomForest") == params[1]
+        pick_one_sd(gs, "RandomForest") == pick_one_sd(gs, "RandomForest") == params[1]
     )
+
+
+def test_pick_one_se_remains_backward_compatible():
+    params = [{"max_depth": 3, "min_samples_leaf": 30}]
+    gs = _FakeGS(params, [0.79], [0.02], best=0)
+
+    assert pick_one_se(gs, "Tree") == pick_one_sd(gs, "Tree") == params[0]

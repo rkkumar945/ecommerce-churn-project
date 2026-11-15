@@ -68,7 +68,7 @@ def get_search_spaces(pos_weight: float) -> dict:
     }
 
 
-# ---- Day 92: deterministic 1-SE pick ----
+# ---- Day 92: deterministic 1-SD pick ----
 COMPLEXITY = {  # chhota tuple = simple model
     "LogReg": lambda p: (p["m__C"],),
     "Tree": lambda p: (p["max_depth"], -p["min_samples_leaf"]),
@@ -81,8 +81,12 @@ COMPLEXITY = {  # chhota tuple = simple model
 }
 
 
-def pick_one_se(gs, family: str, metric: str = "roc_auc") -> dict:
-    """Best score ke ek std ke andar sabse simple combination. Tie-break hyperparameters se, wall-clock se nahi."""
+def pick_one_sd(gs, family: str, metric: str = "roc_auc") -> dict:
+    """Choose the simplest combination within one SD of the best mean fold score.
+
+    The margin uses one standard deviation of the best candidate's fold scores,
+    not a standard error.
+    """
     r = gs.cv_results_
     mean, std = (
         np.asarray(r[f"mean_test_{metric}"]),
@@ -91,3 +95,7 @@ def pick_one_se(gs, family: str, metric: str = "roc_auc") -> dict:
     b = gs.best_index_
     ok = [i for i in range(len(mean)) if mean[i] >= mean[b] - std[b]]
     return dict(min((r["params"][i] for i in ok), key=COMPLEXITY[family]))
+
+
+# Backward-compatible alias: this selector uses one standard deviation, not one SE.
+pick_one_se = pick_one_sd
