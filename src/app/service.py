@@ -44,18 +44,18 @@ def load_artifacts():
     """(model, manifest) return karta hai; load se PEHLE sha256 verify karta hai."""
     if not MODEL_PATH.exists() or not MANIFEST_PATH.exists():
         raise FileNotFoundError(
-            "app_artifacts/ incomplete: python -m src.app.export_artifacts chalao"
+            "app_artifacts/ is incomplete: run python -m src.app.export_artifacts"
         )
     manifest = json.loads(MANIFEST_PATH.read_text())
     if _sha256(MODEL_PATH) != manifest["model_file"]["sha256"]:
         raise ValueError(
-            "Model file manifest se match nahi karti (badli hui ya purani)"
+            "Model file does not match the manifest (it may be changed or outdated)"
         )
 
     model = joblib.load(MODEL_PATH)
     expected = getattr(model, "feature_names_in_", None)
     if expected is not None and list(expected) != list(manifest["features"]):
-        raise ValueError("Model ke features aur manifest ke features alag hain")
+        raise ValueError("Model features do not match the manifest features")
     return model, manifest
 
 
@@ -75,14 +75,14 @@ def find_customer(table: pd.DataFrame, text):
     """(row, None) ya (None, error message). User input par bharosa nahi: sirf digits."""
     text = (text or "").strip()
     if not text:
-        return None, "Customer ID likho."
+        return None, "Enter a customer ID."
     if not text.isdigit():
-        return None, "Customer ID sirf digits hona chahiye (jaise 12347)."
+        return None, "Customer ID must contain digits only (for example, 12347)."
     hit = table[table["Customer ID"] == int(text)]
     if hit.empty:
         return None, (
-            f"Customer {text} lookup table mein nahi hai. Ya ID galat hai, ya is customer ne "
-            "cutoff date se pehle kuch kharida hi nahi (model sirf unhe score karta hai jinki history hai)."
+            f"Customer {text} was not found in the lookup table. The ID may be incorrect, or the customer may have no "
+            "purchases before the cutoff date (the model scores customers with purchase history only)."
         )
     return hit.iloc[0], None
 
@@ -238,14 +238,14 @@ def apply_whatif(row, changes: dict):
     """Chuni hui values badlo, aur dependent features build_features.py ke formulas se dobara nikaalo."""
     for key in changes:
         if key not in WHATIF:
-            raise KeyError(f"{key} what-if ke liye allowed nahi hai")
+            raise KeyError(f"{key} is not allowed in a what-if scenario")
     problems = whatif_problems(row, changes)
     if problems:
         raise ValueError("Invalid what-if scenario: " + " ".join(problems))
     new = row.copy()
     for k, v in changes.items():
         if k not in WHATIF:
-            raise KeyError(f"{k} what-if ke liye allowed nahi hai")
+            raise KeyError(f"{k} is not allowed in a what-if scenario")
         new[k] = float(v)
 
     new["OverdueRatio"] = (

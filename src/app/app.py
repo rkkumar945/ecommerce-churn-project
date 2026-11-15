@@ -57,7 +57,7 @@ st.caption(
 try:
     model, manifest, table, background = get_data()
 except Exception as e:  # noqa: BLE001
-    st.error(f"App load nahi hui: {e}")
+    st.error(f"App could not be loaded: {e}")
     st.stop()
 
 FEATURES = manifest["features"]
@@ -377,7 +377,7 @@ with tab_customer:
                 threshold=THRESHOLD,
                 top_share_max=contact_share_max,
             )
-            err = None if picked is not None else "Koi customer match nahi hua."
+            err = None if picked is not None else "No matching customer was found."
         if err:
             st.error(err)
         else:

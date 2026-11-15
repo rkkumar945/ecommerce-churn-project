@@ -66,6 +66,17 @@ def test_find_customer_validation(scored, text, ok):
     assert (err is None) == ok
 
 
+def test_find_customer_error_messages_are_english(scored):
+    assert find_customer(scored, "")[1] == "Enter a customer ID."
+    assert (
+        find_customer(scored, "abc")[1]
+        == "Customer ID must contain digits only (for example, 12347)."
+    )
+    assert find_customer(scored, "999")[1].startswith(
+        "Customer 999 was not found in the lookup table."
+    )
+
+
 def test_pick_random_flagged_only(scored):
     for seed in range(20):
         row = pick_random(scored, flagged_only=True, threshold=0.6, seed=seed)
