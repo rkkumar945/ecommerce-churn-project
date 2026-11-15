@@ -1,2 +1,5 @@
+#jitni bhi .joblib files hai unko binary file ke roop me treat karna chaiye, isliye isko binary declare karna chaiye.
 *.joblib binary
+
+# ye file automatically generated hai , isko github jab jab hamari repository ki languages count karta hai to is HTML ki percentage badh jati hai, isliye isko true karna chaiye, is se langauge statas ma count nahi karta.
 reports/evidently_drift.html linguist-generated=true

@@ -5,8 +5,13 @@ scipy==1.18.1
 
 # Machine learning
 scikit-learn==1.9.1
+
+# agar dataset me data imbalance hai to imbalanced-learn ka use karna chahiye, ye algorithm ko data imbalance ke liye adjust karta hai.
 imbalanced-learn==0.14.2
+
+#traim nodel ko disk pe save karne ke liye joblib ka use karte hai, ye model ko save karne ke liye best library hai.
 joblib==1.6.0
+#model ki prediction ko explain karne ke liye shap ka use karte hai, ye model ki prediction ko explain karne ke liye best library hai.
 shap==0.54.1
 
 # Visualization
