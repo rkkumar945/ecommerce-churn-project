@@ -24,6 +24,6 @@
 Confusion matrix: TN=37, FP=422, FN=1, TP=597
 
 ## Caveats
-- Test set has few churners, so intervals are wide. Differences inside the intervals are not real differences.
+- Test set has few churners, so intervals are wide. Differences are not decisive; a paired comparison would be needed.
 - Class-weighted scores are meant for ranking; they are not calibrated probabilities. No calibration has been assessed.
 - Costs are assumptions, not measured business numbers.
