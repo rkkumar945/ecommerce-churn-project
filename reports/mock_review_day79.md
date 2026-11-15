@@ -26,7 +26,7 @@ Sources: README.md, Key findings.
 Sources: reports/nested_cv_day84.csv; reports/final_model_card.json.
 
 ## 6. Result + honesty
-"The held-out ROC-AUC was 0.818 (95% bootstrap CI 0.791 to 0.843), and PR-AUC was 0.838. At the top 10%, precision was 0.925, lift was 1.634x, and the group reached 16.4% of non-returners. The 0.07 alert threshold flags almost everyone. The evaluation uses one cutoff and a random customer split, so there is no out-of-time test."
+"The held-out ROC-AUC was 0.818 (95% bootstrap CI 0.791 to 0.843), and average precision (AP) was 0.838. At the top 10%, precision was 0.925, lift was 1.634x, and the group reached 16.4% of non-returners. The 0.07 alert threshold flags almost everyone. The evaluation uses one cutoff and a random customer split, so there is no out-of-time test."
 
 Sources: reports/model_comparison_report.md; README.md, Results and Limitations.
 

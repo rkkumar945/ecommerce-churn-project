@@ -12,7 +12,7 @@ Sources: `.venv-1\Scripts\python.exe --version`; package versions queried with P
 | b. Repository audit | `.venv-1\Scripts\python.exe scripts\repo_audit.py` | PASS — exit code 0; 0 FAIL, 7 WARN and 4 INFO. |
 | c. Shipped model hash | SHA-256 of `app_artifacts/final_model.joblib` compared with `app_artifacts/model_manifest.json` | PASS — both are `bb3ed7b66de970c2c93a9a36be3de3d9ad8347cf3d83810c803450d4eaacdb8b`. |
 | d. Model-card AUC | Exact numeric comparison of `reports/final_model_card.json` and `app_artifacts/model_manifest.json` `test_auc` | PASS — both are `0.8178241196144009`. |
-| e1. README ROC-AUC, interval and PR-AUC | Compared README Results with `reports/model_comparison_report.md` | PASS — 0.818, 95% CI 0.791 to 0.843, and PR-AUC 0.838 agree. |
+| e1. README ROC-AUC, interval and average precision (AP) | Compared README Results with `reports/model_comparison_report.md` | PASS — 0.818, 95% CI 0.791 to 0.843, and average precision (AP) 0.838 agree. |
 | e2. README train/held-out counts | Compared README Results with available report artifacts | NOT RUN — the report confirms 1,057 held-out customers, but no report artifact confirms the 4,226 training count. |
 | e3. README top-10% precision, lift and reach | Searched the pre-existing evaluation artifacts: `reports/model_comparison_report.md`, `reports/final_model_card.json` and the Day 84 CSVs | NOT RUN — these values are not recorded in those evaluation artifacts, so they cannot be independently matched here. |
 | e4. README nested-CV table | Compared rounded README scores with `reports/nested_cv_day84.csv` | PASS — the four README values match the CSV rounded to three decimals. |

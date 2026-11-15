@@ -80,7 +80,7 @@ before the held-out set was scored.
 | Final model | XGBoost (learning_rate 0.03, max_depth 2, n_estimators 150) |
 | Customers (train / held-out) | 4,226 / 1,057 (churn rate 56.6%) |
 | Test ROC-AUC (95% bootstrap CI) | 0.818 (0.791 to 0.843) |
-| Test PR-AUC (base rate) | 0.838 (0.566) |
+| Test average precision (AP; base rate) | 0.838 (0.566) |
 | Alert threshold | 0.07, chosen on out-of-fold predictions with assumed costs |
 | Top 10% targeting | precision 0.925 (95% bootstrap CI 0.858 to 0.962), lift 1.634x (maximum possible about 1.77 with a 56.6% base rate), reaches 16.4% of non-returners |
 
