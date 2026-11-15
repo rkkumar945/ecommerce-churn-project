@@ -26,3 +26,14 @@ def test_app_renders_a_selected_customer():
     assert len(at.exception) == 0
     assert len(at.error) == 0
     assert any(f"Customer {cid}" in s.value for s in at.subheader)
+    assert any(
+        widget.label == "Contact budget (top % of customers by score)"
+        for widget in at.slider
+    )
+    status_messages = [item.value for item in at.success] + [
+        item.value for item in at.info
+    ]
+    assert any(
+        "In your top 10% contact list" in message or "Not in your top 10%" in message
+        for message in status_messages
+    )

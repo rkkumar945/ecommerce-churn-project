@@ -87,8 +87,19 @@ def find_customer(table: pd.DataFrame, text):
     return hit.iloc[0], None
 
 
-def pick_random(table: pd.DataFrame, flagged_only: bool, threshold: float, seed=None):
-    pool = table[table["score"] >= threshold] if flagged_only else table
+def pick_random(
+    table: pd.DataFrame,
+    flagged_only: bool,
+    threshold: float,
+    seed=None,
+    top_share_max: float | None = None,
+):
+    if not flagged_only:
+        pool = table
+    elif top_share_max is not None:
+        pool = table[table["top_share"] <= top_share_max]
+    else:
+        pool = table[table["score"] >= threshold]
     if pool.empty:
         return None
     return pool.sample(1, random_state=seed).iloc[0]

@@ -27,6 +27,7 @@ from src.app.service import (
     whatif_problems,
     wilson_interval,
 )
+from src.models.topk import top_k_count
 
 st.set_page_config(page_title="Churn Risk Explorer", page_icon="📉", layout="wide")
 
@@ -82,8 +83,16 @@ with st.sidebar:
     st.header("Model")
     st.write(f"**{manifest['model']}**")
     st.metric("Test ROC-AUC", f"{manifest['test_auc']:.3f}")
-    st.metric("Alert threshold", f"{THRESHOLD:.2f}")
+    st.metric("Legacy threshold (reference)", f"{THRESHOLD:.2f}")
     st.caption("Scores are for ranking, not calibrated risk percentages.")
+    budget = st.slider(
+        "Contact budget (top % of customers by score)",
+        1,
+        50,
+        10,
+        key="contact_budget",
+    )
+    contact_share_max = top_k_count(len(table), budget / 100) / len(table)
     st.caption(
         f"Built {manifest['created_at_utc'][:10]} · commit {manifest['git_commit']}"
     )
@@ -128,7 +137,7 @@ def score_position_chart(scores, score, threshold):
         threshold,
         color="#d62728",
         linestyle="--",
-        label=f"alert threshold ({threshold:.2f})",
+        label=f"legacy threshold ({threshold:.2f})",
     )
     ax.axvline(score, color="black", linewidth=2, label=f"this customer ({score:.2f})")
     ax.set_xlabel("Model score")
@@ -221,9 +230,13 @@ def what_if_panel(row, base):
         delta_color="inverse",
     )
     b.metric("What-if risk rank", f"Top {max(1, round(res['top_share'] * 100))}%")
-    c.metric("What-if alert", "FLAGGED" if res["flagged"] else "OK")
-    if res["flagged"] != base["flagged"]:
-        st.warning("The alert status flips in this scenario.")
+    in_contact_list = res["top_share"] <= contact_share_max
+    c.metric(
+        "What-if contact status",
+        "In contact list" if in_contact_list else "Not in contact list",
+    )
+    if in_contact_list != (base["top_share"] <= contact_share_max):
+        st.warning("Contact-list status changes in this scenario.")
 
     shown = []
     for f in list(changed) + ["OverdueRatio", "OrderTrend", "Spend_last90_log"]:
@@ -246,16 +259,12 @@ def show_customer(row):
     base = predict_row(model, row, FEATURES, THRESHOLD, table["score"])
     st.subheader(f"Customer {cid} · {row['Country']}")
 
-    if base["flagged"]:
-        st.warning(
-            f"⚠️ **FLAGGED**: score {base['score']:.2f} is at or above the alert threshold "
-            f"({THRESHOLD:.2f}). Prioritise for retention outreach."
+    if base["top_share"] <= contact_share_max:
+        st.success(
+            f"In your top {budget}% contact list"
         )
     else:
-        st.success(
-            f"🟢 **Not flagged**: score {base['score']:.2f} is below the alert threshold "
-            f"({THRESHOLD:.2f})."
-        )
+        st.info(f"Not in your top {budget}%")
 
     left, right = st.columns(2)
     with left:
@@ -272,7 +281,7 @@ def show_customer(row):
         )
         st.pyplot(score_position_chart(table["score"], base["score"], THRESHOLD))
         st.caption(
-            "Grey: all customers. Black line: this customer. Red dashed line: alert threshold."
+            "Grey: all customers. Black line: this customer. Red dashed line: legacy threshold for reference."
         )
 
     with right:
@@ -337,7 +346,11 @@ def show_customer(row):
         )
 
 
-MODES = ["Type a Customer ID", "Random customer", "Random flagged customer"]
+MODES = [
+    "Type a Customer ID",
+    "Random customer",
+    "Random customer in contact list",
+]
 
 tab_customer, tab_list, tab_about = st.tabs(
     ["Customer", "Top at-risk list", "About this model"]
@@ -359,7 +372,10 @@ with tab_customer:
             picked, err = find_customer(table, id_text)
         else:
             picked = pick_random(
-                table, flagged_only=(mode == MODES[2]), threshold=THRESHOLD
+                table,
+                flagged_only=(mode == MODES[2]),
+                threshold=THRESHOLD,
+                top_share_max=contact_share_max,
             )
             err = None if picked is not None else "Koi customer match nahi hua."
         if err:
@@ -369,7 +385,7 @@ with tab_customer:
             entry = {
                 "Customer ID": int(picked["Customer ID"]),
                 "Score": round(float(picked["score"]), 2),
-                "Flagged": bool(picked["score"] >= THRESHOLD),
+                "In contact list": bool(picked["top_share"] <= contact_share_max),
             }
             st.session_state.history = ([entry] + st.session_state.history)[:10]
 
@@ -384,9 +400,7 @@ with tab_list:
     st.markdown(
         "Rank customers by model score and choose how much of the list your retention budget can cover."
     )
-    c1, c2 = st.columns(2)
-    budget = c1.slider("Budget: % of customers to contact", 1, 30, 10)
-    held_out = c2.checkbox(
+    held_out = st.checkbox(
         "Held-out (test) customers only",
         value=True,
         help="Training customers have optimistic scores, so the honest view uses test customers only.",
@@ -434,7 +448,7 @@ with tab_list:
             "Customer ID": ranked["Customer ID"].astype(int).to_numpy(),
             "Country": ranked["Country"].to_numpy(),
             "Score": ranked["score"].round(3).to_numpy(),
-            "Flagged": np.where(ranked["score"] >= THRESHOLD, "Yes", "No"),
+            "In contact list": "Yes",
         }
     )
 
@@ -446,10 +460,7 @@ with tab_list:
         if len(view) > 300:
             st.caption("Reasons are computed for the first 300 customers only.")
 
-    st.caption(
-        f"{int((view['Flagged'] == 'Yes').sum())} of the {len(view)} customers on this list are above "
-        "the alert threshold; the rest are included only because of the budget you chose."
-    )
+    st.caption(f"Contact-list selection uses the top {budget}% by score.")
     st.dataframe(view.head(500), hide_index=True)
     st.download_button(
         "Download this list (CSV)",
@@ -473,9 +484,11 @@ predicts the future instead of re-learning its own label.
 Test ROC-AUC: **{manifest["test_auc"]:.3f}** on {len(te):,} held-out customers
 ({int(te["observed_churn"].sum()):,} of them did not reorder).
 
-**How to read the score.** It is a *ranking* score. Class weighting inflates raw values, so a score of 0.7 does
-**not** mean a 70% chance. Use rank and the alert flag instead. The alert threshold ({THRESHOLD:.2f}) was picked
-on out-of-fold predictions using assumed costs (missing a churner is costly, a wasted offer is cheap).
+**How to read the score.** It is a *ranking* score, not a calibrated probability. Class weighting inflates raw values,
+so a score of 0.7 does **not** mean a 70% chance. Use rank and the contact budget instead. The legacy threshold
+({THRESHOLD:.2f}) flags about 96% of held-out customers; it is shown for reference only and does not select the
+contact list. It was picked on out-of-fold predictions using assumed costs (missing a churner is costly, a wasted
+offer is cheap).
 
 **Limits.**
 - One UK online retailer, Dec 2009 to Dec 2011, so patterns may not transfer to other businesses.

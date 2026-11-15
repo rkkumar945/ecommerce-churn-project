@@ -15,6 +15,7 @@ from src.app.service import (
     pick_random,
     readable_profile,
 )
+from src.models.topk import top_k_count
 
 
 class DummyModel:
@@ -73,6 +74,29 @@ def test_pick_random_flagged_only(scored):
 
 def test_pick_random_returns_none_when_pool_empty(scored):
     assert pick_random(scored, flagged_only=True, threshold=0.99) is None
+
+
+def test_contact_budget_selects_top_k_count():
+    n, budget = 1057, 10
+    table = pd.DataFrame(
+        {
+            "score": np.arange(n, 0, -1, dtype=float),
+            "top_share": np.arange(1, n + 1, dtype=float) / n,
+        }
+    )
+    share_max = top_k_count(n, budget / 100) / n
+    selected = table[table["top_share"] <= share_max]
+
+    assert len(selected) == top_k_count(n, budget / 100) == 106
+    for seed in range(10):
+        row = pick_random(
+            table,
+            flagged_only=True,
+            threshold=1.0,
+            seed=seed,
+            top_share_max=share_max,
+        )
+        assert row["top_share"] <= share_max
 
 
 def test_readable_profile_single_order_and_currency():
