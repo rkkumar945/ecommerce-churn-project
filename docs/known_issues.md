@@ -36,7 +36,7 @@ The notes below distinguish remaining caveats from resolved findings; statuses a
 - **Cleaning defaults and filter inconsistency — Status: Documented.** Defaults preserve non-product and nonpositive-price rows; the cleaner and feature builder use different product-code filters.
 - **Overlapping confidence intervals do not prove no difference — Status: Documented.** Differences are not decisive; a paired comparison would be needed.
 - **Earlier Month-4 notebooks looked at the test split — Status: Documented.** This disclosure is included in the README and interview notes.
-- **Part C follow-ups — Status: Pending (Part C).** Fill live-check placeholders, move `tests/ID_score.py`, address Hinglish UI strings, and add unit tests for `clean_data` and `evaluate`.
+- **Part C follow-ups — Status: Pending (Part C).** Fill live-check placeholders, address Hinglish UI strings, and add unit tests for `clean_data` and `evaluate`.
 - **No out-of-time validation — Status: Open.** Evaluation uses one cutoff and a random customer split; time-based validation remains future work.
 - **No probability calibration study — Status: Open.** Calibration remains future work if probability estimates are needed.
 - **No randomized control group or measured retention uplift — Status: Open.** A randomized campaign holdout is needed to measure incremental impact.
