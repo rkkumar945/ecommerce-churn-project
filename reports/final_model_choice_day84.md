@@ -1,5 +1,5 @@
 # Pre-registered final model (Day 84)
-Decided on CV only. Test set NOT used for any decision (it will be scored once, on Day 85).
+Decided on CV only. The held-out set was not used for any model-selection decision; it was recorded for the final evaluation and reported on Day 85. Earlier exploratory notebooks also looked at the same split, so the final report is intentionally described as the final, fixed evaluation rather than the first time the test set was ever examined.
 
 - Model: XGBoost
 - Params: {"learning_rate": 0.03, "max_depth": 2, "min_child_weight": 3, "n_estimators": 150}

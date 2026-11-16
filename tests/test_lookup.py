@@ -14,6 +14,7 @@ from src.app.service import (
     load_table,
     pick_random,
     readable_profile,
+    select_contact_ids,
 )
 from src.models.topk import top_k_count
 
@@ -93,21 +94,50 @@ def test_contact_budget_selects_top_k_count():
         {
             "score": np.arange(n, 0, -1, dtype=float),
             "top_share": np.arange(1, n + 1, dtype=float) / n,
+            "Customer ID": np.arange(1, n + 1),
+            "split": "test",
         }
     )
-    share_max = top_k_count(n, budget / 100) / n
-    selected = table[table["top_share"] <= share_max]
-
+    selected = select_contact_ids(table, budget)
     assert len(selected) == top_k_count(n, budget / 100) == 106
+    assert selected == set(table.sort_values(["score", "Customer ID"], ascending=[False, True]).head(106)["Customer ID"].tolist())
     for seed in range(10):
         row = pick_random(
             table,
             flagged_only=True,
             threshold=1.0,
             seed=seed,
-            top_share_max=share_max,
+            selected_ids=selected,
         )
-        assert row["top_share"] <= share_max
+        assert int(row["Customer ID"]) in selected
+
+
+def test_select_contact_ids_is_deterministic_and_exact_for_every_budget():
+    n = 1057
+    table = pd.DataFrame(
+        {
+            "Customer ID": np.arange(1, n + 1),
+            "score": np.arange(n, 0, -1, dtype=float),
+            "split": "test",
+        }
+    )
+    for budget in range(1, 51):
+        selected = select_contact_ids(table, budget)
+        expected = top_k_count(n, budget / 100)
+        assert len(selected) == expected
+
+
+def test_select_contact_ids_tie_break_uses_customer_id_then_exact_k():
+    table = pd.DataFrame(
+        {
+            "Customer ID": [110, 111, 112, 113, 114, 115],
+            "score": [0.7, 0.7, 0.7, 0.5, 0.4, 0.3],
+            "split": "test",
+        }
+    )
+    selected = select_contact_ids(table, 33.333)
+    assert selected == {110, 111}
+    assert len(selected) == 2
 
 
 def test_readable_profile_single_order_and_currency():

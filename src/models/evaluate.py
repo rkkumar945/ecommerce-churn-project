@@ -7,8 +7,10 @@ Protocol
 * Every training row gets exactly ONE out-of-fold (OOF) probability, and the
   per-fold CV metrics come from the SAME fitted fold models (one fit per fold).
 * The F1-best (and Youden) threshold is chosen ONLY from those OOF scores.
-* The model is refit on all of X_tr once; the test set is scored once and the
-  frozen thresholds are applied. Nothing on test is ever tuned.
+* The model is refit on all of X_tr once; the held-out test set is scored after
+  model selection and the frozen thresholds are applied. Earlier exploratory notebooks
+  may have used the same split, but the final protocol still treats the test set as a
+  fixed evaluation dataset for the final report.
 * Models without predict_proba (e.g. LinearSVC) are scored with decision_function;
   their natural default threshold is 0.0, not 0.5 (handled automatically).
 """

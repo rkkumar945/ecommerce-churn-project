@@ -71,6 +71,37 @@ def add_scores(model, table: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     return out
 
 
+def select_contact_ids(
+    table: pd.DataFrame, budget_pct: float, *, population: str = "test"
+) -> set[int]:
+    """Deterministic contact-list membership for a chosen active population.
+
+    The default operational population is the held-out (test) split, because it matches the
+    honest ranking view in the app. Selection uses one exact ordering: score desc, Customer ID asc,
+    then head(k) with k = round_half_up(n * budget_pct / 100).
+    """
+    if not 0.0 <= float(budget_pct) <= 100.0:
+        raise ValueError("budget_pct must be between 0 and 100")
+    pool = table.copy()
+    if population == "test":
+        pool = table[table["split"] == "test"].copy() if "split" in table.columns else pool
+    elif population == "all":
+        pool = table.copy()
+    elif population not in {"test", "all"}:
+        raise ValueError("population must be 'test' or 'all'")
+    if pool.empty:
+        return set()
+    k = top_k_count(len(pool), float(budget_pct) / 100.0)
+    sort_cols = ["score"]
+    ascending = [False]
+    if "Customer ID" in pool.columns:
+        sort_cols.append("Customer ID")
+        ascending.append(True)
+    ranked = pool.sort_values(sort_cols, ascending=ascending, kind="mergesort").reset_index(drop=True)
+    ids = ranked["Customer ID"].tolist() if "Customer ID" in ranked.columns else ranked.index.tolist()
+    return set(ids[:k])
+
+
 def find_customer(table: pd.DataFrame, text):
     """(row, None) ya (None, error message). User input par bharosa nahi: sirf digits."""
     text = (text or "").strip()
@@ -93,9 +124,12 @@ def pick_random(
     threshold: float,
     seed=None,
     top_share_max: float | None = None,
+    selected_ids: set[int] | None = None,
 ):
     if not flagged_only:
         pool = table
+    elif selected_ids is not None:
+        pool = table[table["Customer ID"].isin(selected_ids)]
     elif top_share_max is not None:
         pool = table[table["top_share"] <= top_share_max]
     else:
@@ -155,10 +189,9 @@ def predict_row(model, row, features, threshold, reference_scores=None) -> dict:
 
 
 def whatif_problems(row, changes: dict) -> list[str]:
-    """Impossible combinations ki list (khaali list = scenario possible hai).
-    Windows cutoff se peeche naapi jaati hain; 90/180 din ki seema par 1-2 din ka margin rakha hai."""
-    msgs = []
-    numeric = {}
+    """Impossible what-if combinations: return clear user-facing messages or an empty list."""
+    msgs: list[str] = []
+    numeric: dict[str, float] = {}
     for key, value in changes.items():
         try:
             number = float(value)
@@ -185,10 +218,10 @@ def whatif_problems(row, changes: dict) -> list[str]:
             if not np.isfinite(value):
                 msgs.append(f"{key} must be a finite count.")
                 continue
-        if value < 0 or not value.is_integer():
+        if value < 0 or not float(value).is_integer():
             msgs.append(f"{key} must be a non-negative integer count.")
 
-    r = {}
+    r: dict[str, float] = {}
     for key in WHATIF:
         if key in numeric:
             r[key] = numeric[key]
@@ -202,34 +235,46 @@ def whatif_problems(row, changes: dict) -> list[str]:
                 msgs.append(f"{key} must be finite.")
                 continue
             r[key] = value
+
     if msgs:
         return msgs
 
-    if r["Recency"] > row["Tenure"]:
+    if r["Recency"] < 0 or not float(r["Recency"]).is_integer():
+        msgs.append("Recency must be a non-negative integer number of days.")
+    if r["Orders_last90"] < 0 or not float(r["Orders_last90"]).is_integer():
+        msgs.append("Orders_last90 must be a non-negative integer count.")
+    if r["Orders_prev90"] < 0 or not float(r["Orders_prev90"]).is_integer():
+        msgs.append("Orders_prev90 must be a non-negative integer count.")
+
+    if r["Recency"] > float(row["Tenure"]):
         msgs.append(
-            f"Days since last order cannot exceed customer age ({row['Tenure']:.0f} days)."
+            f"Recency ({r['Recency']:.0f} days) cannot exceed customer age ({float(row['Tenure']):.0f} days)."
         )
-    if int(row["SingleOrder"]) == 1 and r["Recency"] != float(row["Tenure"]):
-        msgs.append("For a single-order customer, recency must equal customer age.")
-    if r["Orders_last90"] + r["Orders_prev90"] > row["Frequency"]:
+    if int(row["SingleOrder"]) == 1 and not np.isclose(r["Recency"], float(row["Tenure"])):
+        msgs.append("For a single-order customer, Recency must equal customer age.")
+    if r["Orders_last90"] + r["Orders_prev90"] > float(row["Frequency"]) + 1e-9:
         msgs.append(
-            f"Orders in the two 90-day windows cannot exceed total orders ({row['Frequency']:.0f})."
+            f"Orders in the two 90-day windows cannot exceed total orders (Frequency={float(row['Frequency']):.0f})."
         )
     if r["Recency"] >= 91 and r["Orders_last90"] > 0:
         msgs.append(
-            "Last order was more than 90 days before the cutoff, so orders in the last 90 days must be 0."
+            "If the last order was more than 90 days before the cutoff, the last-90 window must be 0 orders."
         )
     if r["Recency"] <= 88 and r["Orders_last90"] < 1:
         msgs.append(
-            "Last order was within 90 days of the cutoff, so there must be at least 1 order in that window."
+            "If the last order was within 90 days of the cutoff, the last-90 window must include at least 1 order."
         )
     if r["Recency"] >= 181 and r["Orders_prev90"] > 0:
         msgs.append(
-            "Last order was more than 180 days before the cutoff, so orders in the prior 90 days must be 0."
+            "If the last order was more than 180 days before the cutoff, the prior-90 window must be 0 orders."
         )
     if 92 <= r["Recency"] <= 178 and r["Orders_prev90"] < 1:
         msgs.append(
-            "Last order fell in the prior 90-day window, so there must be at least 1 order there."
+            "If the last order fell in the prior 90-day window, that window must include at least 1 order."
+        )
+    if float(row["Tenure"]) < 90 and r["Orders_prev90"] > 0:
+        msgs.append(
+            "A customer with tenure under 90 days cannot have an order in the 90-to-180 day window."
         )
     return msgs
 
@@ -321,7 +366,12 @@ def top_k_summary(pool: pd.DataFrame, frac: float) -> dict:
     """Pool ko score se rank karke top frac ka haal: precision, lift, churners ka kitna hissa reach hua."""
     n = len(pool)
     k = top_k_count(n, frac)
-    top = pool.sort_values("score", ascending=False).head(k)
+    sort_cols = ["score"]
+    ascending = [False]
+    if "Customer ID" in pool.columns:
+        sort_cols.append("Customer ID")
+        ascending.append(True)
+    top = pool.sort_values(sort_cols, ascending=ascending, kind="mergesort").head(k)
     base_rate = float(pool["observed_churn"].mean())
     precision = float(top["observed_churn"].mean())
     churners = float(pool["observed_churn"].sum())

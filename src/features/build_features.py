@@ -3,6 +3,8 @@
 import numpy as np
 import pandas as pd
 
+from src.cleaning.clean_data import NON_PRODUCT_CODES
+
 #Eupropean countries ki ek list banai, or 3 catagory me divide kiya.
 # kyuki countries bahut sari hai jis se agar hum direct sari countries ko uske naam se use karenge to ML model me bahut sare columns ban jayenge or model overfit ho sakta hai.
 EUROPE = [
@@ -82,16 +84,19 @@ def build_customer_dataset(
         raise ValueError("horizon_days must be a positive integer")
     tx = tx.copy()
 
-    # Agar exclude_non_product True hai, toh 'POST' waale rows filter karein
+    # Explicit shared non-product policy: this changes customer eligibility and should be opt-in.
     if exclude_non_product:
-        tx = tx[tx["StockCode"] != "POST"]
+        codes = {str(code).upper() for code in NON_PRODUCT_CODES}
+        tx = tx[~tx["StockCode"].astype(str).str.upper().isin(codes)].copy()
 
     tx["LineTotal"] = tx["Quantity"] * tx["Price"]
 
     data_max = tx['InvoiceDate'].max()
     end = pd.Timestamp(as_of) if as_of is not None else data_max
-    if end > data_max + pd.Timedelta(days=1):
-        raise ValueError(f'as_of={as_of} data ki aakhri date ({data_max}) se aage hai: labels galat banenge') # agar date data ke last date se aage ki hai to aise me code sabhi customers ko churned(1) mark kar dega.
+    if end > data_max:
+        raise ValueError(
+            "as_of must be at or before the latest observed InvoiceDate; a synthetic later cutoff is not a valid completeness watermark."
+        )
     tx = tx[tx['InvoiceDate'] <= end]
     if tx.empty:
         raise ValueError(f'as_of={as_of} se pehle koi transaction nahi')

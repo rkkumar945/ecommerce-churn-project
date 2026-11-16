@@ -47,6 +47,10 @@ def check_clean(df: pd.DataFrame) -> list[str]:
         problems.append('duplicate rows remain')
     if not pd.api.types.is_datetime64_any_dtype(df['InvoiceDate']):
         problems.append('InvoiceDate not datetime')
+    if (df['Quantity'] < 0).any():
+        problems.append('negative Quantity remains; only cancellation rows should be removed by default')
+    if (df['Price'] <= 0).any():
+        problems.append('non-positive Price remains; explicit opt-in cleaning policy required before changing the default')
     return problems
 
 

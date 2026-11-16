@@ -22,6 +22,7 @@ from src.app.service import (
     predict_row,
     readable_profile,
     runtime_env,
+    select_contact_ids,
     top_k_summary,
     top_reasons,
     whatif_problems,
@@ -62,6 +63,8 @@ except Exception as e:  # noqa: BLE001
 
 FEATURES = manifest["features"]
 THRESHOLD = manifest["threshold"]
+ACTIVE_POOL = table[table["split"] == "test"].copy()
+ACTIVE_CONTACT_IDS = select_contact_ids(ACTIVE_POOL, float(st.session_state.get("contact_budget", 10)))
 
 for key, default in {"selected_id": None, "history": [], "wi_version": 0}.items():
     if key not in st.session_state:
@@ -92,7 +95,12 @@ with st.sidebar:
         10,
         key="contact_budget",
     )
-    contact_share_max = top_k_count(len(table), budget / 100) / len(table)
+    ACTIVE_POOL = table[table["split"] == "test"].copy()
+    ACTIVE_CONTACT_IDS = select_contact_ids(ACTIVE_POOL, budget)
+    st.caption(
+        f"Population: test set only ({len(ACTIVE_POOL):,} customers). "
+        "The contact list is the exact top-{budget}% by score using score desc, Customer ID asc."
+    )
     st.caption(
         f"Built {manifest['created_at_utc'][:10]} · commit {manifest['git_commit']}"
     )
@@ -230,14 +238,14 @@ def what_if_panel(row, base):
         delta_color="inverse",
     )
     b.metric("What-if risk rank", f"Top {max(1, round(res['top_share'] * 100))}%")
-    in_contact_list = res["top_share"] <= contact_share_max
+    in_contact_list = int(row["Customer ID"]) in ACTIVE_CONTACT_IDS
     c.metric(
         "What-if contact status",
         "In contact list" if in_contact_list else "Not in contact list",
     )
-    if in_contact_list != (base["top_share"] <= contact_share_max):
-        st.warning("Contact-list status changes in this scenario.")
-
+    st.caption(
+        "Partial-feature sensitivity analysis only: changing a score here does not prove that contacting a customer will prevent churn."
+    )
     shown = []
     for f in list(changed) + ["OverdueRatio", "OrderTrend", "Spend_last90_log"]:
         before, after = float(row[f]), float(new_row[f])
@@ -259,12 +267,10 @@ def show_customer(row):
     base = predict_row(model, row, FEATURES, THRESHOLD, table["score"])
     st.subheader(f"Customer {cid} · {row['Country']}")
 
-    if base["top_share"] <= contact_share_max:
-        st.success(
-            f"In your top {budget}% contact list"
-        )
+    if cid in ACTIVE_CONTACT_IDS:
+        st.success(f"In the active top {budget}% contact list")
     else:
-        st.info(f"Not in your top {budget}%")
+        st.info(f"Not in the active top {budget}% contact list")
 
     left, right = st.columns(2)
     with left:
@@ -375,7 +381,7 @@ with tab_customer:
                 table,
                 flagged_only=(mode == MODES[2]),
                 threshold=THRESHOLD,
-                top_share_max=contact_share_max,
+                selected_ids=ACTIVE_CONTACT_IDS if mode == MODES[2] else None,
             )
             err = None if picked is not None else "No matching customer was found."
         if err:
@@ -385,7 +391,7 @@ with tab_customer:
             entry = {
                 "Customer ID": int(picked["Customer ID"]),
                 "Score": round(float(picked["score"]), 2),
-                "In contact list": bool(picked["top_share"] <= contact_share_max),
+                "In contact list": int(picked["Customer ID"]) in ACTIVE_CONTACT_IDS,
             }
             st.session_state.history = ([entry] + st.session_state.history)[:10]
 
@@ -414,7 +420,7 @@ with tab_list:
 
     if not held_out:
         st.warning(
-            "This view includes customers the model was trained on, so the numbers below are optimistic."
+            "This view includes customers the model was trained on, so the numbers below are optimistic; it is not the same population as the default active contact list."
         )
 
     m = st.columns(4)
@@ -441,14 +447,17 @@ with tab_list:
         "so do not read small differences between budgets as real."
     )
 
-    ranked = pool.sort_values("score", ascending=False).head(s["k"])
+    ranked = pool.sort_values(
+        ["score", "Customer ID"], ascending=[False, True], kind="mergesort"
+    ).head(s["k"])
+    in_active_contact = ranked["Customer ID"].isin(ACTIVE_CONTACT_IDS)
     view = pd.DataFrame(
         {
             "Position": np.arange(1, len(ranked) + 1),
             "Customer ID": ranked["Customer ID"].astype(int).to_numpy(),
             "Country": ranked["Country"].to_numpy(),
             "Score": ranked["score"].round(3).to_numpy(),
-            "In contact list": "Yes",
+            "In active contact list": in_active_contact.to_numpy(),
         }
     )
 
@@ -460,7 +469,9 @@ with tab_list:
         if len(view) > 300:
             st.caption("Reasons are computed for the first 300 customers only.")
 
-    st.caption(f"Contact-list selection uses the top {budget}% by score.")
+    st.caption(
+        f"Active contact list population: test set only ({len(ACTIVE_POOL):,} customers); this list is based on the same exact top-{budget}% selection."
+    )
     st.dataframe(view.head(500), hide_index=True)
     st.download_button(
         "Download this list (CSV)",

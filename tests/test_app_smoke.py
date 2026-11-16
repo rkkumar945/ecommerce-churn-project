@@ -34,6 +34,6 @@ def test_app_renders_a_selected_customer():
         item.value for item in at.info
     ]
     assert any(
-        "In your top 10% contact list" in message or "Not in your top 10%" in message
+        "In the active top 10% contact list" in message or "Not in the active top 10%" in message
         for message in status_messages
     )

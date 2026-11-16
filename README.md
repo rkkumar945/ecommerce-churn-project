@@ -31,9 +31,9 @@
 3. **Final evaluation:** [reports/model_comparison_report.md](reports/model_comparison_report.md)
 4. **Design notes:** [retraining](docs/retraining_design.md), [monitoring](docs/monitoring_plan.md), [deployment](docs/deployment.md)
 
-The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On the held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). Contacting the 10% highest-scored held-out customers finds non-returners with 92.5% precision (lift 1.634x; with a 56.6% base rate the maximum possible lift is about 1.77) and reaches 16.4% of all non-returners.
+The model ranks customers by their risk of not ordering in the 90 days after a cutoff date, using only transactions made before that date. On the held-out set it reaches a test ROC-AUC of 0.818 (95% bootstrap CI 0.791 to 0.843). This is a ranking metric, not accuracy: the model is useful for prioritising outreach, not for claiming that 81.8% of customers are churners. Contacting the top 10% of held-out customers finds non-returners with 92.5% precision (lift 1.634x; with a 56.6% base rate the maximum possible lift is about 1.77), and reaches 16.4% of all non-returners.
 
-The final pre-registered model's held-out evaluation was done once for the final report. Earlier Month 4 notebooks also looked at the test split and reported baseline-model scores; this is disclosed in [reports/test_comparison_day70.csv](reports/test_comparison_day70.csv).
+The final pre-registered model's held-out evaluation was recorded before the test set was used for model selection and reporting. Earlier Month 4 notebooks also looked at the test split and reported baseline-model scores; that history is disclosed in [reports/test_comparison_day70.csv](reports/test_comparison_day70.csv), but the final model card still describes the faithful held-out evaluation and the ranking use case.
 
 ## Business Problem
 Winning a new customer usually costs more than keeping an existing one, and a retention team can only contact so many people.
@@ -98,7 +98,7 @@ Nested cross-validation (honest estimate after tuning):
 - Descriptive EDA label: VIP customers churn at 13.6%, against 55.3% for Regular customers; label derived from Recency, partly circular, not evidence of predictive power.
 - The top SHAP feature group is Frequency / volume (importance 0.474), followed by Recency / timing (0.342), Monetary / value (0.228) and Basket / product (0.181). Tenure (0.014) and Geography (0.002) add almost nothing.
 - Nested CV scores for Logistic Regression (0.796), Random Forest (0.802) and XGBoost (0.803) sit within one standard deviation (about 0.014 to 0.016) of each other, so the model choice is not statistically decisive.
-- At the chosen threshold of 0.07 the model has recall 0.998 and precision 0.586 against a base rate of 0.566: it flags almost every customer, so the ranking (AUC 0.818) is the useful output, not the alert flag alone.
+- At the legacy threshold of 0.07 the model has recall 0.998 and precision 0.586 against a base rate of 0.566: it flags almost every customer, so the ranking (AUC 0.818) is the useful output, not the alert flag alone. The 0.07 threshold is shown for reference only; it does not imply a calibrated probability and it is not a business-validated intervention rule.
 
 ## System Architecture
 ```mermaid
@@ -174,10 +174,19 @@ The Evidently drift report needs its own environment, see the header of `scripts
 To rebuild everything from raw data, download the dataset [data/README.md](data/README.md), then run the notebooks in order or the pipeline:
 `python -m src.pipeline.run_pipeline` (dry-run) and `python -m src.pipeline.run_pipeline --execute`.
 
+## Honest limitations
+- One UK online retailer, 2009 to 2011, so patterns may not transfer to other businesses.
+- Evaluation uses one cutoff snapshot with a random customer split; there is no out-of-time validation.
+- Risk scores are ranking scores, not calibrated probabilities; a score of 0.70 is not a 70% churn chance unless a calibration study confirms it.
+- The assumed business utility (40 benefit for a true positive, 5 cost for a false positive, 50 cost for a false negative) is a planning assumption, not a measured profit or retention uplift.
+- The model has not been validated in a randomized campaign holdout, so we do not know whether contacting the top-ranked customers actually prevents churn.
+- The raw transaction file and intermediate CSVs are not present in the repo, so cleaning -> feature -> label reconciliation is not independently reproducible without the original source data.
+- The what-if sliders are partial-feature sensitivity checks only; changing a score here does not prove a causal intervention would work.
+
 ## Limitations
 - One UK online retailer, 2009 to 2011, so patterns may not transfer to other businesses.
 - The 90-day churn window is a business assumption, and the cost figures behind the alert threshold are assumptions.
-- The model-card alert threshold flags almost every customer, so use the ranking and the top list instead; see [docs/known_issues.md](docs/known_issues.md).
+- The legacy threshold of 0.07 flags almost every held-out customer, so use the ranking and the top list instead; see [docs/known_issues.md](docs/known_issues.md).
 - Retention impact is not measured because there is no control group.
 - Evaluation uses one cutoff snapshot with a random customer split; there is no out-of-time test.
 - The held-out set has 598 non-returners (1,057 customers), so every metric still has an uncertainty band. For XGBoost versus Logistic Regression, differences are not decisive; a paired comparison would be needed.

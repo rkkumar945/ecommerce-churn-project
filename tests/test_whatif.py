@@ -100,6 +100,7 @@ def test_impossible_scenarios_are_rejected(art):
     "changes",
     [
         {"Orders_last90": -1},
+        {"Recency": -1},
         {"Recency": np.nan},
         {"Orders_prev90": 0.5},
     ],
@@ -120,6 +121,13 @@ def test_single_order_customer_must_keep_recency_equal_to_tenure(art):
     assert row["SingleOrder"] == 1
     assert row["Recency"] == row["Tenure"] == 219
     assert whatif_problems(row, {"Recency": 0})
+
+
+def test_impossible_window_constraints_are_rejected(art):
+    _, _, table = art
+    row = table[(table["Tenure"] < 90) & (table["Frequency"] >= 2)].iloc[0]
+    assert whatif_problems(row, {"Recency": 64, "Orders_last90": 1, "Orders_prev90": 1})
+    assert whatif_problems(row, {"Recency": -1})
 
 
 def test_dependents_follow_the_formulas(art):

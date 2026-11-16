@@ -2,7 +2,7 @@
 
 **Final model (pre-registered on Day 84, chosen on CV only):** XGBoost
 **Threshold:** 0.07, chosen from out-of-fold predictions using assumed costs (FN=50, FP=5, TP benefit=40).
-**Test set:** n=1057, churners=598. Final model scored once.
+**Test set:** n=1057, churners=598. Final model evaluation recorded once in this report; earlier Month 4 notebooks also examined the same split for exploratory comparison and this is disclosed separately.
 
 ## Test performance (all models, reference only; selection was not based on this table)
 | model               |   test_auc |   auc_lo |   auc_hi |   test_ap |   ap_lo |   ap_hi |

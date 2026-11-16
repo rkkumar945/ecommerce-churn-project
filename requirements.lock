@@ -1,0 +1,22 @@
+# Pinned environment for the committed model artifact and manifest.
+# The exact Python version in production is 3.14.6; use a matching interpreter or the model
+# will not be expected to match the recorded environment exactly.
+
+python==3.14.6
+pandas==3.1.1
+numpy==2.5.4
+scipy==1.18.1
+scikit-learn==1.9.1
+xgboost==3.4.1
+joblib==1.6.0
+imbalanced-learn==0.14.2
+shap==0.54.1
+matplotlib==3.11.2
+seaborn==0.13.2
+streamlit==1.66.1
+requests==2.34.2
+mlflow==3.17.2
+pytest==9.1.1
+ruff==0.17.3
+jupyter==1.1.1
+statsmodels==0.15.0

@@ -28,8 +28,17 @@ NON_PRODUCT_CODES = [
     "D",
     "TEST001",
     "TEST002",
-] # ye un items ki list hai jo real products nahi hain, jaise ki postage, fees, adjustments, aur test items. Inhe data cleaning ke dauraan exclude kiya ja sakta hai.
-# jab hum sales analysis karte hai to in non-product entries ko hatana zaruri hai, taki humare results accurate ho taki revenue or quantites galat calculate na ho.
+]
+
+
+def non_product_mask(stockcodes) -> pd.Series:
+    """Shared non-product definition used by both cleaning and feature building.
+
+    This is intentionally explicit and opt-in; changing the list changes customer eligibility,
+    labels and features, so retraining is required before shipping a new policy.
+    """
+    codes = {str(code).upper() for code in NON_PRODUCT_CODES}
+    return stockcodes.astype(str).str.upper().isin(codes)
 
 def clean_transactions(
     df: pd.DataFrame,
@@ -56,7 +65,7 @@ def clean_transactions(
         ~df["Invoice"].astype(str).str.startswith("C") # (~) un invoices ko hata deti hai jinke starting me C aata hai, warna return orders bhi valid sales ki tarah count ho jainge jis se revenue galat ho jaiga.
     ].copy()  # cancellations/returns
     if exclude_non_product:
-        df = df[~df["StockCode"].astype(str).isin(NON_PRODUCT_CODES)].copy() # 
+        df = df[~non_product_mask(df["StockCode"])].copy()
     if drop_nonpositive_price:      # 0 ya negative price wali rows ko hata deta hai, 
         df = df[df["Price"] > 0].copy() 
     df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"]) # InvoiceDate column ko string se pandas ke datetime format me convert karta hai. isi se hum month,time,dates per based filtering,sorting,time-based grouping kar sakte hai.
