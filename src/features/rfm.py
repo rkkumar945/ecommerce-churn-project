@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 
+# yeh function hai jo new data per bhi  training data ke jaisa hi score deta hai. 
 def rfm_scores(
     values: pd.Series, reference: pd.Series, reverse: bool = False, k: int = 5
 ) -> pd.Series:
@@ -19,6 +20,7 @@ def rfm_scores(
     return pd.Series(score, index=values.index)
 
 
+# ye function R,F,M ke scores ke bisis per customer ko alag alag define karta hai , taki marketing team pata laga sake ki kis customer ke sath kya action lena hai.
 def assign_segment(r: pd.Series, f: pd.Series, m: pd.Series) -> np.ndarray:
     conditions = [
         (r >= 4) & (f >= 4) & (m >= 4),
@@ -29,3 +31,7 @@ def assign_segment(r: pd.Series, f: pd.Series, m: pd.Series) -> np.ndarray:
     ]
     names = ["Champions", "Loyal", "New / Promising", "At Risk", "Hibernating"]
     return np.select(conditions, names, default="Need Attention")
+
+
+# ye pura code RFM customer segmentation pipeline hai , iske bsais per customer ke purchasing behaviour ke basis per unhe score karne or alag alag divide karne ke liye kiya jata hai.
+# marketing team ke liye ek clean data prepare karta hai jis se team actions le sake.

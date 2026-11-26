@@ -13,6 +13,7 @@ from src.features.rfm import assign_segment, rfm_scores
 def test_scores_stay_in_range():
     ref = pd.Series(np.arange(100))
     s = rfm_scores(pd.Series([0, 50, 99, 500, -5]), ref)
+    
     assert s.between(1, 5).all()
 
 

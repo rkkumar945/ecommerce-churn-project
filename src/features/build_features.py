@@ -68,12 +68,12 @@ def make_xy(df: pd.DataFrame, num_cols: list[str]) -> pd.DataFrame:
     """Numeric columns + one-hot Region (fixed categories, taaki columns hamesha same rahein)."""
     X = df[num_cols].copy()
     X["Region"] = pd.Categorical(df["Region"], categories=REGIONS)
-    return pd.get_dummies(X, columns=["Region"], drop_first=True) # agar hum REGIONS ko 0 or 1 me concert karte hai to agar pehle 2 columns 0 aa gye to automatically teesra 1 hoga. agar teen columns rakh le to information repeat hogi.
+    return pd.get_dummies(X, columns=["Region"], drop_first=True) # agar hum REGIONS ko catagories 0 or 1 me convert karte hai to agar pehle 2 columns 0 aa gye to automatically teesra 1 hoga. agar teen columns rakh le to information repeat hogi.
 
 
-# ye data leakage ko rokta hai.
+# ye data leakage ko rokta hai. or data leakage ko rokne ke liye observation window or prediction window banata hai.
 def build_customer_dataset(
-    tx: pd.DataFrame, horizon_days: int = 90, as_of=None, exclude_non_product: bool = False
+    tx: pd.DataFrame, horizon_days: int = 90, as_of=None, exclude_non_product: bool = False # as_of date or non-product aane per flag deta hai.
 ) -> pd.DataFrame:
     """Features sirf cutoff se pehle ke transactions se; label cutoff ke baad ke window se."""
     if (
@@ -106,7 +106,7 @@ def build_customer_dataset(
     future = tx[tx["InvoiceDate"] >= cutoff]
 
     # ---- Day 62: base features (unchanged) ----
-    # past transactions ke hisab se group karta hai. ye RFM base numbers hai.
+    # past transactions ke hisab se group karta hai. ye RFM base numbers hai. customer ke purchasing behaviour ko numerical numbers me convert kiya.
     f = (
         past.groupby("Customer ID")
         .agg(

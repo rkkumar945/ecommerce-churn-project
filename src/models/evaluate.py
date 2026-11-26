@@ -3,7 +3,9 @@
 Reuse for Random Forest / XGBoost in Month 5.
 
 Protocol
---------
+* ye ek test taking banata hai ki humne jo model banaya hai wo new data per kaose kaaam karta hai humeko kitna fayda ya nuksaan de raha hai.
+* model yeh batata hai ki transactions fraud(1) hai ya normal(0), model direct ye number dene ke bajaye ek score deta hai, jaise agar hum cutt-off rakhte hai 0.5 agar 0.5 se upar score aaya to fraud hoga.
+
 * Every training row gets exactly ONE out-of-fold (OOF) probability, and the
   per-fold CV metrics come from the SAME fitted fold models (one fit per fold).
 * The F1-best (and Youden) threshold is chosen ONLY from those OOF scores.
@@ -14,6 +16,7 @@ Protocol
 * Models without predict_proba (e.g. LinearSVC) are scored with decision_function;
   their natural default threshold is 0.0, not 0.5 (handled automatically).
 """
+
 
 import numpy as np
 import pandas as pd
